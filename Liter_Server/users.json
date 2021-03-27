@@ -1,0 +1,44 @@
+{
+    "total": 2,
+    "uid": [
+        {
+            "status": "Normal",
+            "authority": "Admin",
+            "username": "Admin",
+            "nickname": "Admin",
+            "password": "26yU38ZQM3Va",
+            "regtime": "2021/03/18 22:39",
+            "name": "unknown",
+            "age": "unknown",
+            "sex": "unknown",
+            "mail": "3099665076@qq.com",
+            "topic": [1]
+        },
+        {
+            "status": "Delete",
+            "authority": "Operator",
+            "username": "drelf",
+            "nickname": "Drelf",
+            "password": "26yU38ZQM3Va",
+            "regtime": "2021/03/19 15:20",
+            "name": "unknown",
+            "age": "unknown",
+            "sex": "female",
+            "mail": "3099665076@qq.com",
+            "topic": [0, 1]
+        },
+        {
+            "status": "Normal",
+            "authority": "Default",
+            "username": "kidd",
+            "nickname": "Kidd",
+            "password": "NUWMuLw17im",
+            "regtime": "2021/03/19 15:24",
+            "name": "unknown",
+            "age": "unknown",
+            "sex": "male",
+            "mail": "1123914369@qq.com",
+            "topic": [1]
+        }
+    ]
+}
