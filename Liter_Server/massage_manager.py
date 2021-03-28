@@ -40,17 +40,18 @@ def get_msg_line(mid):
 def new_massage(ip, text, uid, last):
     global total
     total += 1
-    page = last//100
-    last %= 100
-    file = get_path(str(page))
-    if os.path.exists(file):
-        with open(file, encoding="utf-8") as f:
-            msg = json.load(f)
-        msg[last]['next'] = total
-        with open(file, 'w', encoding="utf-8") as f:
-            json.dump(msg, f, indent=4)
-    else:
-        return False
+    if not last == -1:
+        page = last//100
+        last %= 100
+        file = get_path(str(page))
+        if os.path.exists(file):
+            with open(file, encoding="utf-8") as f:
+                msg = json.load(f)
+            msg[last]['next'] = total
+            with open(file, 'w', encoding="utf-8") as f:
+                json.dump(msg, f, indent=4, ensure_ascii=False)
+        else:
+            return False
     last = total
     page = last//100
     last %= 100

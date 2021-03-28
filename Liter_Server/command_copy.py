@@ -6,6 +6,7 @@ import topic_manager as tm
 
 AVAILABLE_COMMANDS = {
     '/login': 2,
+    '/new_topic': 1,
     '/update': 1,
     '/sendto': 2,
     '/close': 0
@@ -26,6 +27,14 @@ def analysis_command(cmd: str, need=None, user=None):
                 if resp[0]:
                     resp[1] = [tm.topics['tid'][r] for r in resp[1]]
                     resp[1] = str(json.dumps(resp[1], ensure_ascii=False))
+            elif args[0] == '/new_topic':
+                mid = mm.new_massage('127.0.0.1', '话题[{}]由用户[{}]建立'.format(para[0], user[0]), 0, -1)
+                tid = tm.new_topic(para[0], user[0], mid)
+                topic = um.users['uid'][user[0]]['topic']
+                topic.append(tid)
+                um.modify_user(user[0], {'topic': topic})
+                resp = [tm.topics['tid'][tid]]
+                resp = str(json.dumps(resp, ensure_ascii=False))
             elif args[0] == '/update':
                 resp = mm.get_msg_line(*para)
                 for i in range(len(resp)):

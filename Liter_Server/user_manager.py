@@ -34,7 +34,7 @@ def check(uid, pwd: str):
         return [False, None]
 
 
-def add_user(username='unknown', nickname="unknown", password='ABC123', mail='unknown'):
+def new_user(username='unknown', nickname="unknown", password='ABC123', mail='unknown'):
     user = {
         'status': 'Normal',
         'authority': 'Default',

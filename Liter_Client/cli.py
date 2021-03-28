@@ -42,7 +42,7 @@ class TCPClient:
             print("连接已断开！")
 
     def analysis(self, cmd, data):
-        if cmd == '/login':
+        if cmd == '/login' or cmd == '/new_topic':
             try:
                 data = json.loads(data)
                 s = ''
