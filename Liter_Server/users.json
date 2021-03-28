@@ -25,7 +25,7 @@
             "age": "unknown",
             "sex": "female",
             "mail": "3099665076@qq.com",
-            "topic": [0, 1]
+            "topic": [1]
         },
         {
             "status": "Normal",

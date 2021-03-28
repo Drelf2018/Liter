@@ -11,16 +11,21 @@ class TCPClient:
         self.PORT = port
         self.BUFSIZ = 1024
         self.ADDRESS = (self.HOST, self.PORT)
+        self.command = []
         self.tcpClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcpClientSocket.connect(self.ADDRESS)
 
     def login(self, account: dict):
-        self.tcpClientSocket.send(('/login {} {}'.format(account['username'], account['password'])).encode('utf-8'))
+        self.send('/login {} {}'.format(account['username'], account['password']))
         time.sleep(0.15)
 
     def send(self, msg):
         if msg:
-            self.tcpClientSocket.send(msg.encode('utf-8'))
+            try:
+                self.command.append(msg.split(' ')[0])
+                self.tcpClientSocket.send(msg.encode('utf-8'))
+            except Exception as e:
+                print(e)
 
     def receive(self):
         try:
@@ -28,19 +33,34 @@ class TCPClient:
                 data = self.tcpClientSocket.recv(self.BUFSIZ).decode('utf-8')
                 if data == '/close':
                     break
-                try:
-                    data = json.loads(data)
-                    s = ''
-                    for f in data:
-                        s += '\n{}{}({}){}->{}: {}'.format(f['time'], f['from'], f['ip'], f['mid'], f['next'], f['text'])
-                    data = s
-                except Exception as e:
-                    print(e)
-                    pass
-                print("<<<{}".format(data))
+                else:
+                    self.analysis(self.command.pop(0), data)
+        except Exception as e:
+            print(e)
         finally:
             self.tcpClientSocket.close()
             print("连接已断开！")
+
+    def analysis(self, cmd, data):
+        if cmd == '/login':
+            try:
+                data = json.loads(data)
+                s = ''
+                for f in data:
+                    s += '\n[{}]({},{},{}): {}->{}'.format(f['name'], f['tid'], f['belong'], f['regtime'], f['first'], f['last'])
+                    data = s
+            except Exception as e:
+                print(e)
+        if cmd == '/update':
+            try:
+                data = json.loads(data)
+                s = ''
+                for f in data:
+                    s += '\n{}{}({}){}->{}: {}'.format(f['time'], f['from'], f['ip'], f['mid'], f['next'], f['text'])
+                    data = s
+            except Exception as e:
+                print(e)
+        print("<<<{}".format(data))
 
 
 ex = futures.ThreadPoolExecutor(max_workers=1)
