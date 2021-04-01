@@ -29,6 +29,7 @@ class RoundShadow(QWidget):
         self.color = color
         self.space = space
         self.img = img
+        # m_drag 用于判断是否可以移动窗口
         self.m_drag = False
         self.m_DragPosition = None
         # 设置窗口大小为界面大小加上两倍阴影扩散距离
@@ -36,7 +37,8 @@ class RoundShadow(QWidget):
         # 设置窗口无边框和背景透明
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
-        self.bglab = TLabel([0, self.r, self.r, 0], img, self)
+        # 设置圆角背景图片
+        self.bglab = TLabel([0, self.r, self.r, 0], img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
 
     def paintEvent(self, event):
@@ -59,26 +61,16 @@ class RoundShadow(QWidget):
             shadow_pat.setPen(self.color)
             shadow_pat.drawPath(shadow_path)
 
-        # 画圆角
+        # 画圆角标题栏
         round_pat = QPainter(self)
         round_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
         round_pat.setPen(Qt.transparent)  # 透明
-        # 画标题栏
-        round_pat.setBrush(Qt.gray)  # 灰色笔刷
+        round_pat.setBrush(QColor(187, 222, 251))  # 灰色笔刷
         title_path = RoundPath(QRectF(self.s, self.s, self.width()-2*self.s, 40), self.r, 0, 0, self.r)
         round_pat.drawPath(title_path)
-        '''
-        # 画背景
-        brush = QBrush(Qt.white)
-        if self.img:
-            brush.setTextureImage(QImage(self.img).scaled(self.width()-2*self.s, self.height()-2*self.s-40))
-        round_pat.setBrush(brush)
-        winmain_path = RoundPath(QRectF(self.s, self.s+40, self.width()-2*self.s, self.height()-2*self.s-40), 0, self.r, self.r, 0)
-        round_pat.drawPath(winmain_path)
-        '''
 
     def mousePressEvent(self, QMouseEvent):
-        '鼠标点击 检测点击位置判断是否可移动'
+        '鼠标点击 检测点击位置判断是否可移动\n清楚所有文本框的选中状态'
         if QMouseEvent.button() == Qt.LeftButton:
             # 鼠标点击点的相对位置
             self.m_DragPosition = QMouseEvent.globalPos()-self.pos()
@@ -89,11 +81,12 @@ class RoundShadow(QWidget):
         for le in LineEdits:
             if le.hasFocus():
                 le.clearFocus()
-                le.pen = le.pen_style['gray']
-                le.change_icon(0)
+            le.pen = le.pen_style['gray']
+            le.change_icon(0)
         QMouseEvent.accept()
 
     def mouseMoveEvent(self, QMouseEvent):
+        '按住标题栏可移动窗口'
         if self.m_drag:
             self.move(QMouseEvent.globalPos()-self.m_DragPosition)
             QMouseEvent.accept()
@@ -107,7 +100,7 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     app = QApplication(sys.argv)
     pic = 'C:\\Users\\drelf\\Pictures\\Saved Pictures\\bg.jpg'
-    t = RoundShadow(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, 'img/bg2.png')
+    t = RoundShadow(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)
     minButton = TPushButton('img/min1.png', 'img/min2.png', 'img/min2.png', t)
     # 设置控件QPushButton的位置和大小
     minButton.setGeometry(479, 16, 26, 26)
@@ -121,8 +114,12 @@ if __name__ == '__main__':
     closeButton.clicked.connect(t.close)
 
     # 新建单行文本框并设置大小位置
-    accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], t)
-    accountEdit.setGeometry(185, 116, 180, 45)
+    lab = TLabel([5, 5, 5, 5], color=QColor(255, 255, 255, 155), parent=t)
+    accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
+    accountEdit.setGeometry(0, 0, 180, 45)
+    passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
+    passwordEdit.setGeometry(0, 55, 180, 45)
+    lab.setGeometry(185, 116, 185, 110)
 
     t.show()
     app.exec_()

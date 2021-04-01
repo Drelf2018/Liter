@@ -1,4 +1,4 @@
-from Liter import Client
+from Liter_Client import Client
 
 
 cli = Client()
