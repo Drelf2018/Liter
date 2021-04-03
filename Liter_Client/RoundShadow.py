@@ -1,13 +1,10 @@
-from PyQt5.QtCore import (Qt, QRectF)
-from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QIcon)
-from PyQt5.QtWidgets import (QWidget, QApplication)
-from TLineEdit import TLineEdit
-from TPushButton import TPushButton
-from TLabel import TLabel
-from TPath import RoundPath
+from PyQt5.QtCore import (Qt, QRectF, pyqtSignal)
+from PyQt5.QtGui import (QPainter, QColor, QPainterPath)
+from PyQt5.QtWidgets import QWidget
+from .TLineEdit import TLineEdit
+from .TLabel import TLabel
+from .TPath import RoundPath
 import numpy as np
-import sys
-import os
 
 
 class RoundShadow(QWidget):
@@ -21,6 +18,8 @@ class RoundShadow(QWidget):
     space 自变量(距离界面距离，取值[0-s])每次增加距离\n
     img 背景图片
     '''
+    _signal = pyqtSignal()
+
     def __init__(self, width, height, r, s, alpha, color, space, img=None, parent=None):
         super(RoundShadow, self).__init__(parent)
         self.r = r
@@ -40,6 +39,7 @@ class RoundShadow(QWidget):
         # 设置圆角背景图片
         self.bglab = TLabel([0, self.r, self.r, 0], img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
+        self._signal.connect(self.close)
 
     def paintEvent(self, event):
         # 画阴影
@@ -77,12 +77,16 @@ class RoundShadow(QWidget):
             print((self.m_DragPosition.x(), self.m_DragPosition.y()))
             if self.m_DragPosition.y() <= 40 + self.s:
                 self.m_drag = True
+
+        LineEdit = self
+        while LineEdit and not isinstance(LineEdit, TLineEdit):
+            LineEdit = LineEdit.childAt(QMouseEvent.x(), QMouseEvent.y())
         LineEdits = self.findChildren(TLineEdit)
         for le in LineEdits:
-            if le.hasFocus():
+            if not le == LineEdit:
                 le.clearFocus()
-            le.pen = le.pen_style['gray']
-            le.change_icon(0)
+                le.pen = le.pen_style['gray']
+                le.change_icon(0)
         QMouseEvent.accept()
 
     def mouseMoveEvent(self, QMouseEvent):
@@ -94,32 +98,3 @@ class RoundShadow(QWidget):
     def mouseReleaseEvent(self, QMouseEvent):
         self.m_drag = False
         QMouseEvent.accept()
-
-
-if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
-    app = QApplication(sys.argv)
-    pic = 'C:\\Users\\drelf\\Pictures\\Saved Pictures\\bg.jpg'
-    t = RoundShadow(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)
-    minButton = TPushButton('img/min1.png', 'img/min2.png', 'img/min2.png', t)
-    # 设置控件QPushButton的位置和大小
-    minButton.setGeometry(479, 16, 26, 26)
-    # 绑定按钮事件
-    minButton.clicked.connect(t.showMinimized)
-
-    closeButton = TPushButton('img/close1.png', 'img/close2.png', 'img/close2.png', t)
-    # 设置控件QPushButton的位置和大小
-    closeButton.setGeometry(510, 16, 26, 26)
-    # 绑定按钮事件
-    closeButton.clicked.connect(t.close)
-
-    # 新建单行文本框并设置大小位置
-    lab = TLabel([5, 5, 5, 5], color=QColor(255, 255, 255, 155), parent=t)
-    accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-    accountEdit.setGeometry(0, 0, 180, 45)
-    passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-    passwordEdit.setGeometry(0, 55, 180, 45)
-    lab.setGeometry(185, 116, 185, 110)
-
-    t.show()
-    app.exec_()

@@ -19,7 +19,7 @@ class TCPServer:
         while True:
             client_socket, client_address = self.tcpServerSocket.accept()
             self.ex.submit(self.response, client_socket, client_address)
-            print('已连接客户端[{}]！'.format(client_address))
+            print('已连接客户端{}！'.format(client_address))
 
     def response(self, client_socket, client_address):
         try:

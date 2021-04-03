@@ -1,6 +1,7 @@
 import json
 import time
 import socket
+from .LoginWindow import LoginWindow
 import concurrent.futures as futures
 
 
@@ -9,6 +10,8 @@ class Client(object):
         self.BUFSIZ = 1024
         self.ADDRESS = (host, port)
         self.command = []
+        self.Lw = None
+        self.ex = None
         self.tcpClientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcpClientSocket.connect(self.ADDRESS)
 
@@ -46,6 +49,8 @@ class Client(object):
                 for f in data:
                     s += '\n[{}]({},{},{}): {}->{}'.format(f['name'], f['tid'], f['belong'], f['regtime'], f['first'], f['last'])
                     data = s
+                if self.Lw.alive:
+                    self.Lw.close()
             except Exception as e:
                 print(e)
         if cmd == '/update':
@@ -59,8 +64,9 @@ class Client(object):
                 print(e)
         print("<<<{}".format(data))
 
-    def start():
-        ex = futures.ThreadPoolExecutor(max_workers=1)
-        tc = Client()
-        ex.submit(tc.receive)
-        tc.login({'username': 'drelf', 'password': 'drelf...'})
+    def start(self):
+        self.ex = futures.ThreadPoolExecutor(max_workers=2)
+        self.ex.submit(self.receive)
+        self.Lw = LoginWindow(func=lambda x: self.login(x))
+        self.Lw.show()
+        input()

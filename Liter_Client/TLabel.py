@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (QImage, QBrush, QPainter)
-from TPath import RoundPath
+from .TPath import RoundPath
 import cv2
 
 
@@ -27,6 +27,7 @@ class TLabel(QLabel):
         pat = QPainter(self)
         pat.setPen(Qt.NoPen)
         brush = QBrush()
+        pat.setRenderHint(pat.Antialiasing)  # 抗锯齿
         # 画刷为图片 若不存在为纯色
         if self.img:
             self.img = QImage(self.img).scaled(self.width(), self.height())
