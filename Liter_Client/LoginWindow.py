@@ -8,7 +8,7 @@ from PyQt5.QtGui import (QColor, QIcon, QFont, QRegExpValidator)
 
 
 class LoginWindow(RoundShadow):
-    def __init__(self, connecter, pic='C:\\Users\\drelf\\Pictures\\Saved Pictures\\bg.jpg'):
+    def __init__(self, connecter, pic='img\\bg.jpg'):
         super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic, 'Liter')
         self.connecter = connecter
         self.connecter.setSignal(self.signal)

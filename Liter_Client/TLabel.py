@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (QImage, QBrush, QPainter)
 from .TPath import RoundPath
 import cv2
+import os
 
 
 class TLabel(QLabel):
@@ -18,6 +19,7 @@ class TLabel(QLabel):
         self.color = color
         self.text = text
         if img:
+            os.chdir(os.path.dirname(__file__))
             src = cv2.imread(img)  # opencv读取图片
             img = cv2.GaussianBlur(src, (0, 0), 10)  # 高斯模糊
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
