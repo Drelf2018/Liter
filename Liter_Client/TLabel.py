@@ -11,11 +11,12 @@ class TLabel(QLabel):
     r 圆角半径，类型为列表，从左上开始逆时针顺序\n
     img 要展示的图片
     '''
-    def __init__(self, r: list, img=None, color=Qt.white, parent=None):
+    def __init__(self, r=(0, 0, 0, 0), img=None, color=Qt.white, text=None, parent=None):
         super(TLabel, self).__init__(parent)
         self.r = r
         self.img = img
         self.color = color
+        self.text = text
         if img:
             src = cv2.imread(img)  # opencv读取图片
             img = cv2.GaussianBlur(src, (0, 0), 10)  # 高斯模糊
@@ -36,5 +37,11 @@ class TLabel(QLabel):
             brush = QBrush(self.color)
         # 喷漆
         pat.setBrush(brush)
-        path = RoundPath(self.rect(), self.r[0], self.r[1], self.r[2], self.r[3])
+        path = RoundPath(self.rect(), self.r)
         pat.drawPath(path)
+        # 文字
+        if self.text:
+            color, font, text = self.text
+            pat.setPen(color)
+            pat.setFont(font)
+            pat.drawText(self.rect(), Qt.AlignCenter, text)

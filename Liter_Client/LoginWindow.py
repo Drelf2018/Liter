@@ -29,7 +29,7 @@ class LoginWindow(RoundShadow):
         closeButton.setGeometry(510, 16, 26, 26)
         closeButton.clicked.connect(self.close)
         # 新建展示框用于放置文本框与按钮
-        lab = TLabel([20, 20, 20, 20], color=QColor(255, 255, 255, 155), parent=self)
+        lab = TLabel((20, 20, 20, 20), color=QColor(255, 255, 255, 155), parent=self)
         lab.setGeometry(8+(540-245)/2, 150, 245, 175)
         # 新建账号文本框并设置大小位置
         accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
@@ -50,7 +50,7 @@ class LoginWindow(RoundShadow):
         accountEdit.setValidator(validator)  # 限制用户名范围
         passwordEdit.setValidator(validator)  # 限制密码范围
         # 新建登录按钮并设置大小位置
-        loginButton = TPushButton(r=[10, 10, 10, 10], color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=lab)
+        loginButton = TPushButton(r=(10, 10, 10, 10), color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=lab)
         loginButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '登录'))
         loginButton.clicked.connect(
             lambda: self.connecter.login({

@@ -39,7 +39,7 @@ class RoundShadow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         # 设置圆角背景图片
-        self.bglab = TLabel([0, self.r, self.r, 0], img=img, parent=self)
+        self.bglab = TLabel((0, self.r, self.r, 0), img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
         self.signal.connect(self.close)
 
@@ -68,7 +68,7 @@ class RoundShadow(QWidget):
         round_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
         round_pat.setPen(Qt.transparent)  # 透明
         round_pat.setBrush(QColor(187, 222, 255))  # 蓝色笔刷
-        title_path = RoundPath(QRectF(self.s, self.s, self.width()-2*self.s, 40), self.r, 0, 0, self.r)
+        title_path = RoundPath(QRectF(self.s, self.s, self.width()-2*self.s, 40), (self.r, 0, 0, self.r))
         round_pat.drawPath(title_path)
 
         # 画标题

@@ -1,4 +1,5 @@
 import sys
+import time
 from .send_receive import connecter
 from .LoginWindow import LoginWindow
 from .MainWindow import MainWindow
@@ -15,6 +16,7 @@ class Client(object):
         LoginWindow(self.ct).show()
         self.app.exec_()
         if self.ct.results:
+            time.sleep(0.15)
             MainWindow(self.ct).show()
             self.app.exec_()
         self.ct.quit()

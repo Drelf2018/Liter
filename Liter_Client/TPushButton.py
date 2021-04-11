@@ -10,7 +10,7 @@ class TPushButton(QPushButton):
     img 按钮处于三种状态时图片\n
     color 不选用 img 时三种状态下颜色\n
     '''
-    def __init__(self, r=[0, 0, 0, 0], img=None, color=[Qt.gray, Qt.white, Qt.blue], parent=None):
+    def __init__(self, r=(0, 0, 0, 0), img=None, color=[Qt.gray, Qt.white, Qt.blue], parent=None):
         super(TPushButton, self).__init__(parent)
         self.r = r
         self.img = img
@@ -49,7 +49,7 @@ class TPushButton(QPushButton):
             brush = QBrush(self.color[self.choice])
         # 喷漆
         pat.setBrush(brush)
-        path = RoundPath(self.rect(), self.r[0], self.r[1], self.r[2], self.r[3])
+        path = RoundPath(self.rect(), self.r)
         pat.drawPath(path)
         # 文字
         if self.text:

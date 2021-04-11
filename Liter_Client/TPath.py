@@ -2,8 +2,9 @@ from PyQt5.QtCore import QRectF
 from PyQt5.QtGui import QPainterPath
 
 
-def RoundPath(rect: QRectF, r00, r10, r11, r01):
+def RoundPath(rect: QRectF, r: tuple):
     '获取画圆角线路径'
+    r00, r10, r11, r01 = r
     path = QPainterPath()
     # 左上
     path.moveTo(rect.x()+r00, rect.y())

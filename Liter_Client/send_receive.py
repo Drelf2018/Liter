@@ -48,20 +48,12 @@ class connecter(QThread):
         if cmd == '/login':
             try:
                 data = json.loads(data)
-                s = ''
-                for f in data:
-                    s += '\n[{}]({},{},{}): {}->{}'.format(f['name'], f['tid'], f['belong'], f['regtime'], f['first'], f['last'])
-                    data = s
                 self.signal.emit()
             except Exception as e:
                 print(e)
         if cmd == '/new_topic':
             try:
                 data = json.loads(data)
-                s = ''
-                for f in data:
-                    s += '\n[{}]({},{},{}): {}->{}'.format(f['name'], f['tid'], f['belong'], f['regtime'], f['first'], f['last'])
-                    data = s
             except Exception as e:
                 print(e)
         if cmd == '/update':
