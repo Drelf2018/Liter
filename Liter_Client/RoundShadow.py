@@ -1,7 +1,6 @@
 from PyQt5.QtCore import (Qt, QRectF, pyqtSignal)
-from PyQt5.QtGui import (QPainter, QColor, QPainterPath)
+from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QFont)
 from PyQt5.QtWidgets import QWidget
-from .TLineEdit import TLineEdit
 from .TLabel import TLabel
 from .TPath import RoundPath
 import numpy as np
@@ -18,9 +17,9 @@ class RoundShadow(QWidget):
     space 自变量(距离界面距离，取值[0-s])每次增加距离\n
     img 背景图片
     '''
-    _signal = pyqtSignal()
+    signal = pyqtSignal()
 
-    def __init__(self, width, height, r, s, alpha, color, space, img=None, parent=None):
+    def __init__(self, width, height, r, s, alpha, color, space, img=None, title=None, parent=None):
         super(RoundShadow, self).__init__(parent)
         self.r = r
         self.s = s
@@ -28,6 +27,9 @@ class RoundShadow(QWidget):
         self.color = color
         self.space = space
         self.img = img
+        self.title = title
+        # 窗体句柄
+        self.hwnd = 0
         # m_drag 用于判断是否可以移动窗口
         self.m_drag = False
         self.m_DragPosition = None
@@ -39,7 +41,7 @@ class RoundShadow(QWidget):
         # 设置圆角背景图片
         self.bglab = TLabel([0, self.r, self.r, 0], img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
-        self._signal.connect(self.close)
+        self.signal.connect(self.close)
 
     def paintEvent(self, event):
         # 画阴影
@@ -65,29 +67,31 @@ class RoundShadow(QWidget):
         round_pat = QPainter(self)
         round_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
         round_pat.setPen(Qt.transparent)  # 透明
-        round_pat.setBrush(QColor(187, 222, 251))  # 灰色笔刷
+        round_pat.setBrush(QColor(187, 222, 255))  # 蓝色笔刷
         title_path = RoundPath(QRectF(self.s, self.s, self.width()-2*self.s, 40), self.r, 0, 0, self.r)
         round_pat.drawPath(title_path)
 
+        # 画标题
+        if self.title:
+            x, y = self.r+8, self.r+22
+            title_pat = QPainter(self)
+            title_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
+            title_pat.setFont(QFont('msyh', 18, QFont.Bold))
+            # 画阴影
+            title_pat.setPen(QColor(0, 0, 0, 125))  # 黑笔
+            title_pat.drawText(x-1, y+1, self.title)
+            # 画字体
+            title_pat.setPen(Qt.white)  # 白笔
+            title_pat.drawText(x, y, self.title)
+
     def mousePressEvent(self, QMouseEvent):
-        '鼠标点击 检测点击位置判断是否可移动\n清楚所有文本框的选中状态'
+        '鼠标点击 检测点击位置判断是否可移动\n清除所有文本框的选中状态'
         if QMouseEvent.button() == Qt.LeftButton:
             # 鼠标点击点的相对位置
             self.m_DragPosition = QMouseEvent.globalPos()-self.pos()
             print((self.m_DragPosition.x(), self.m_DragPosition.y()))
             if self.m_DragPosition.y() <= 40 + self.s:
                 self.m_drag = True
-
-        LineEdit = self
-        while LineEdit and not isinstance(LineEdit, TLineEdit):
-            LineEdit = LineEdit.childAt(QMouseEvent.x(), QMouseEvent.y())
-        LineEdits = self.findChildren(TLineEdit)
-        for le in LineEdits:
-            if not le == LineEdit:
-                le.clearFocus()
-                le.pen = le.pen_style['gray']
-                le.change_icon(0)
-        QMouseEvent.accept()
 
     def mouseMoveEvent(self, QMouseEvent):
         '按住标题栏可移动窗口'

@@ -11,6 +11,7 @@ def open_users():
     for i in range(1, users['total']+1):
         dic[users['uid'][i]['username']] = i
         dic[users['uid'][i]['mail']] = i
+        dic[str(i)] = i
 
 
 def save_users():

@@ -1,37 +1,13 @@
 from PyQt5.QtCore import (Qt, QPointF)
-from PyQt5.QtGui import (QPainter, QColor, QPen, QFont)
+from PyQt5.QtGui import (QPainter, QColor, QPen)
 from PyQt5.QtWidgets import (QLineEdit, QAction)
-import win32gui
-import win32api
-from win32con import WM_INPUTLANGCHANGEREQUEST
-
-
-def change_language(lang='en'):
-    """
-    切换语言
-    :param lang: en––English; ch––Chinese
-    :return: bool
-    """
-    LID = {
-        "ch": 0x0804,
-        "en": 0x0409
-    }
-    hwnd = win32gui.GetForegroundWindow()
-    language = LID[lang]
-    result = win32api.SendMessage(
-        hwnd,
-        WM_INPUTLANGCHANGEREQUEST,
-        0x0409,
-        language
-    )
-    if result == 0:
-        return True
 
 
 class TLineEdit(QLineEdit):
     '自定义的只含底线的文本框'
     def __init__(self, icon: list, parent=None):
         super(TLineEdit, self).__init__(parent)
+        self.s = ''
         # 三种不同颜色的底画线
         self.pen_style = {
             'gray': QPen(QColor(229, 229, 229), 3),
@@ -46,8 +22,6 @@ class TLineEdit(QLineEdit):
         self.selectApply.setIcon(icon[0])
         # LeadingPosition 表示图标在左侧
         self.addAction(self.selectApply, self.LeadingPosition)
-        # 设置字体字高 微软雅黑
-        self.setFont(QFont('msyh', 14))
 
     def change_icon(self, t):
         '修改图标'
@@ -73,7 +47,6 @@ class TLineEdit(QLineEdit):
 
     def mousePressEvent(self, QMouseEvent):
         '按下文本框 变色'
-        print(change_language())
         self.pen = self.pen_style['blue']
         self.selectApply.setIcon(self.icon[1])
         QMouseEvent.ignore()
@@ -83,3 +56,17 @@ class TLineEdit(QLineEdit):
         if self.pen == self.pen_style['dark']:
             self.pen = self.pen_style['gray']
         QMouseEvent.accept()
+
+    def focusInEvent(self, focusEvent):
+        '获得焦点事件'
+        super(TLineEdit, self).focusInEvent(focusEvent)
+        self.pen = self.pen_style['blue']
+        self.selectApply.setIcon(self.icon[1])
+        focusEvent.accept()
+
+    def focusOutEvent(self, focusEvent):
+        '失去焦点事件'
+        super(TLineEdit, self).focusOutEvent(focusEvent)
+        self.pen = self.pen_style['gray']
+        self.selectApply.setIcon(self.icon[0])
+        focusEvent.accept()
