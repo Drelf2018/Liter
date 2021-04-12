@@ -35,7 +35,7 @@ class MainWindow(RoundShadow):
         massageWidget = QWidget()
         massageWidget.setWindowFlags(Qt.FramelessWindowHint)
         mwheight = 0
-        for i in range(52, 55):
+        for i in range(26, 250, 26):
             tm = TMessage({'text': '草'*i}, parent=massageWidget)
             tm.move(0, mwheight)
             mwheight += tm.height()
