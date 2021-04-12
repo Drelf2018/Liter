@@ -3,6 +3,7 @@ from .TLabel import TLabel
 # from .TLineEdit import TLineEdit
 from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
+from .TMessage import TMessage
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (QColor, QFont)
 from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QScrollArea, QWidget)
@@ -13,6 +14,7 @@ class MainWindow(RoundShadow):
         super(MainWindow, self).__init__(820, 640, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, None, 'Liter')
         self.connecter = connecter
         self.connecter.setSignal(self.signal)
+        self.tt = None
         self.initUI()
 
     def initUI(self):
@@ -29,8 +31,22 @@ class MainWindow(RoundShadow):
         closeButton.setGeometry(790, 16, 26, 26)
         closeButton.clicked.connect(self.close)
 
-        lab1 = TLabel(color=QColor(255, 0, 0, 155))
-        lab2 = TLabel(color=QColor(0, 255, 0, 155))
+        # lab1 = TLabel(color=QColor(255, 0, 0, 155))
+        massageWidget = QWidget()
+        massageWidget.setWindowFlags(Qt.FramelessWindowHint)
+        mwheight = 0
+        for i in range(52, 55):
+            tm = TMessage({'text': '草'*i}, parent=massageWidget)
+            tm.move(0, mwheight)
+            mwheight += tm.height()
+        massageWidget.setMinimumSize(615, mwheight)
+        scroll2 = QScrollArea()
+        scroll2.setWidget(massageWidget)
+        scroll2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll2.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll2.setFrameShape(QFrame.NoFrame)
+
+        lab2 = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
         sendButton = TPushButton(r=(8, 8, 8, 8), color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=lab2)
         sendButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '发送'))
         sendButton.clicked.connect(lambda: self.connecter.send(''))
@@ -43,7 +59,8 @@ class MainWindow(RoundShadow):
         topicbox.setSpacing(0)
         hbox.setSpacing(0)
 
-        showbox.addWidget(lab1, 23)
+        # showbox.addWidget(lab1, 23)
+        showbox.addWidget(scroll2, 23)
         showbox.addWidget(lab2, 9)
 
         topics = self.connecter.results.pop(0)

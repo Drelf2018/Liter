@@ -47,3 +47,4 @@ class TLabel(QLabel):
             pat.setPen(color)
             pat.setFont(font)
             pat.drawText(self.rect(), Qt.AlignCenter, text)
+        super(TLabel, self).paintEvent(event)
