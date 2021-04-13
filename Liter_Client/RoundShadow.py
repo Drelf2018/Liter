@@ -1,4 +1,4 @@
-from PyQt5.QtCore import (Qt, QRectF, pyqtSignal)
+from PyQt5.QtCore import (Qt, QRectF)
 from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QFont)
 from PyQt5.QtWidgets import QWidget
 from .TLabel import TLabel
@@ -17,8 +17,6 @@ class RoundShadow(QWidget):
     space 自变量(距离界面距离，取值[0-s])每次增加距离\n
     img 背景图片
     '''
-    signal = pyqtSignal()
-
     def __init__(self, width, height, r, s, alpha, color, space, img=None, title=None, parent=None):
         super(RoundShadow, self).__init__(parent)
         self.r = r
@@ -41,7 +39,6 @@ class RoundShadow(QWidget):
         # 设置圆角背景图片
         self.bglab = TLabel((0, self.r, self.r, 0), img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
-        self.signal.connect(self.close)
 
     def paintEvent(self, event):
         # 画阴影

@@ -1,14 +1,21 @@
-import math
-from PyQt5.QtWidgets import QScrollArea
+# coding:utf-8
+# https://blog.csdn.net/zhiyiYo/article/details/107557814
+from collections import deque
+from enum import Enum
+from math import cos, pi
+
+from PyQt5.QtCore import QDateTime, Qt, QTimer
+from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtWidgets import QApplication, QScrollArea
 
 
-class ScrollArea(QScrollArea):
+class TScrollArea(QScrollArea):
     """ 一个可以平滑滚动的区域 """
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.fps = 60
-        self.duration = 400
+        self.duration = 200
         self.stepsTotal = 0
         self.stepRatio = 1.5
         self.acceleration = 1
@@ -17,8 +24,11 @@ class ScrollArea(QScrollArea):
         self.stepsLeftQueue = deque()
         self.smoothMoveTimer = QTimer(self)
         self.smoothMode = SmoothMode(SmoothMode.COSINE)
-        self.smoothMoveTimer.timeout.connect(self.smoothMove)
-        self.setVerticalScrollMode(self.ScrollPerPixel)
+        self.smoothMoveTimer.timeout.connect(self.__smoothMove)
+
+    def setSMoothMode(self, smoothMode):
+        """ 设置滚动模式 """
+        self.smoothMode = smoothMode
 
     def wheelEvent(self, e: QWheelEvent):
         """ 实现平滑滚动效果 """
@@ -45,14 +55,14 @@ class ScrollArea(QScrollArea):
         # 将移动距离和步数组成列表，插入队列等待处理
         self.stepsLeftQueue.append([delta, self.stepsTotal])
         # 定时器的溢出时间t=1000ms/帧数
-        self.smoothMoveTimer.start(1000 / self.fps)
+        self.smoothMoveTimer.start(1000/self.fps)
 
-    def smoothMove(self):
+    def __smoothMove(self):
         """ 计时器溢出时进行平滑滚动 """
         totalDelta = 0
         # 计算所有未处理完事件的滚动距离，定时器每溢出一次就将步数-1
         for i in self.stepsLeftQueue:
-            totalDelta += self.subDelta(i[0], i[1])
+            totalDelta += self.__subDelta(i[0], i[1])
             i[1] -= 1
         # 如果事件已处理完，就将其移出队列
         while self.stepsLeftQueue and self.stepsLeftQueue[0][1] == 0:
@@ -72,7 +82,7 @@ class ScrollArea(QScrollArea):
         if not self.stepsLeftQueue:
             self.smoothMoveTimer.stop()
 
-    def subDelta(self, delta, stepsLeft):
+    def __subDelta(self, delta, stepsLeft):
         """ 计算每一步的插值 """
         m = self.stepsTotal / 2
         x = abs(self.stepsTotal - stepsLeft - m)

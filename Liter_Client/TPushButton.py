@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import (QImage, QBrush, QPainter)
+from PyQt5.QtGui import (QImage, QBrush, QPainter, QColor)
 from .TPath import RoundPath
 
 
@@ -10,9 +10,10 @@ class TPushButton(QPushButton):
     img 按钮处于三种状态时图片\n
     color 不选用 img 时三种状态下颜色\n
     '''
-    def __init__(self, r=(0, 0, 0, 0), img=None, color=[Qt.gray, Qt.white, Qt.blue], parent=None):
+    def __init__(self, r=(0, 0, 0, 0), bid=0, img=None, color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=None):
         super(TPushButton, self).__init__(parent)
         self.r = r
+        self.bid = bid
         self.img = img
         self.color = color
         self.choice = 0
