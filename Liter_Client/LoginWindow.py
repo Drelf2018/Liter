@@ -12,10 +12,10 @@ class LoginWindow(RoundShadow):
 
     def check_login(self, x):
         if x:
-            print('登录成功')
+            print('气泡-登录成功')
             self.close()
         else:
-            print('账号或密码错误')
+            print('气泡-账号或密码错误')
 
     def __init__(self, connecter, pic='img\\bg.jpg'):
         super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)

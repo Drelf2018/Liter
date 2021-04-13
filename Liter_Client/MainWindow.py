@@ -1,12 +1,36 @@
 import os
+import time
 from .TLabel import TLabel
 from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
 from .TMessage import TMessage
 from .TScrollArea import TScrollArea
-from PyQt5.QtCore import (Qt, pyqtSignal)
+from PyQt5.QtCore import (Qt, pyqtSignal, QThread)
 from PyQt5.QtGui import (QColor, QFont)
-from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
+
+
+class autoUpdate(QThread):
+    '自动刷新消息 间隔一秒'
+    def __init__(self, mainwindow):
+        super(autoUpdate, self).__init__()
+        self.mw = mainwindow
+
+    def run(self):
+        while True:
+            button = self.mw.selectButton
+            if not button == self.mw.homeButton:
+                first = button.bid
+                child = self.mw.massageWidget.children()  # 获取原有消息 可能为空
+                self.mw.setTitle(button.text[2])  # 改标题
+                if child and child[0].massage['mid'] == first:
+                    # 消息不为空且需要更新的话题是当前话题
+                    self.mw.remake = True
+                    self.mw.connecter.send('/update {}'.format(child[-1].massage['mid']))
+                else:
+                    self.mw.remake = False
+                    self.mw.connecter.send('/update {}'.format(first))
+            time.sleep(0.45)  # 太快服务器反应不过来
 
 
 class MainWindow(RoundShadow):
@@ -19,37 +43,50 @@ class MainWindow(RoundShadow):
         self.topicWidget = QWidget()  # 话题框
         self.update_signal.connect(self.change_massage)  # 连接槽函数
         self.connecter.setSignal('/update', self.update_signal)  # 将信号告诉连接器
+        self.remake = False  # 判断是否保留消息框
+        self.auto = autoUpdate(self)  # 自动刷新
         self.initUI()
         self.initTopic()
+        self.auto.start()  # 启动线程
 
-    def update_massage(self):
-        '获取新消息'
-        self.homeLabel.hide()  # 隐藏主页
-        first = self.sender().bid  # https://www.5axxw.com/questions/content/dpc5m4
-        child = self.massageWidget.children()  # 获取原有消息 可能为空
-        self.setTitle(self.sender().text[2])  # 改标题
-        if child and child[0].massage['mid'] == first:
-            # 消息不为空且需要更新的话题是当前话题
-            self.connecter.send('/update {}'.format(child[-1].massage['next']))
+    def sendTo(self):
+        if not self.selectButton == self.homeButton:
+            text = self.sendEdit.toPlainText()
+            if text:
+                self.connecter.send('/sendto {} {}'.format(self.selectButton.tid, text))
+                self.sendEdit.clear()
+
+    def button_clicked(self):
+        '按钮按下'
+        self.selectButton = self.sender()  # https://www.5axxw.com/questions/content/dpc5m4
+        if self.selectButton == self.homeButton:
+            self.homeLabel.show()  # 显示主页
         else:
-            # 重置消息框
-            self.massageWidget = QWidget()
-            self.massageWidget.resize(615, 0)
-            self.connecter.send('/update {}'.format(first))
+            self.homeLabel.hide()  # 隐藏主页
 
     def change_massage(self, massages):
         '修改消息框内容'
-        mwheight = self.massageWidget.height()
-        for msg in massages:
-            if msg:
+        old_massages = []
+        if massages:
+            if self.remake:
+                if len(massages) == 1:
+                    return
+                else:
+                    massages = massages[1:]
+                old_massages = [tm.massage for tm in self.massageWidget.children()]
+            massages = old_massages + massages
+            self.massageWidget = QWidget()
+            self.massageWidget.resize(615, 0)
+            mwheight = 0
+            for msg in massages:
                 # 新建单条消息组件
                 tm = TMessage(massage=msg, parent=self.massageWidget)
                 tm.move(0, mwheight)
                 mwheight += tm.height()
-        self.massageWidget.setMinimumSize(615, mwheight)
-        self.massageScroll.setWidget(self.massageWidget)
-        # 自动滚动至最下 https://tieba.baidu.com/p/3174003701?red_tag=0415728187
-        self.massageScroll.verticalScrollBar().setValue(self.massageScroll.verticalScrollBar().maximum())
+            self.massageWidget.setMinimumSize(615, mwheight)
+            self.massageScroll.setWidget(self.massageWidget)
+            # 自动滚动至最下 https://tieba.baidu.com/p/3174003701?red_tag=0415728187
+            self.massageScroll.verticalScrollBar().setValue(self.massageScroll.verticalScrollBar().maximum())
 
     def initTopic(self):
         '向话题框添加话题'
@@ -58,10 +95,10 @@ class MainWindow(RoundShadow):
         theight = 75
         twheight = 0
         for topic in self.connecter.topics:
-            tb = TPushButton(bid=topic['first'], parent=self.topicWidget)
+            tb = TPushButton(bid=topic['first'], tid=topic['tid'], parent=self.topicWidget)
             tb.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), topic['name']))
             tb.setGeometry(0, twheight, 205, theight)
-            tb.clicked.connect(self.update_massage)
+            tb.clicked.connect(self.button_clicked)
             twheight += theight
         self.topicWidget.setMinimumSize(205, twheight)
         self.topicScroll.setWidget(self.topicWidget)
@@ -92,11 +129,17 @@ class MainWindow(RoundShadow):
         self.massageScroll.setFrameShape(QFrame.NoFrame)
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
-        self.lab2 = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
-        self.sendButton = TPushButton(r=(8, 8, 8, 8), parent=self.lab2)
+        self.sendLabel = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
+        self.sendEdit = QTextEdit(self.sendLabel)
+        self.sendEdit.setFont(QFont('msyh', 11))
+        self.sendEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sendEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sendEdit.setGeometry(10, 10, 595, 105)  # 初始位置以及大小
+        # 发送按钮
+        self.sendButton = TPushButton(r=(8, 8, 8, 8), parent=self.sendLabel)
         self.sendButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '发送'))
-        self.sendButton.clicked.connect(lambda: self.connecter.send(''))
-        self.sendButton.setGeometry(505, 120, 100, 40)
+        self.sendButton.clicked.connect(self.sendTo)
+        self.sendButton.setGeometry(525, 125, 80, 35)
         # 添加布局并设置布局中组件间距
         self.showBox = QVBoxLayout()
         self.topicBox = QVBoxLayout()
@@ -116,15 +159,17 @@ class MainWindow(RoundShadow):
         # 主页按钮
         self.homeButton = TPushButton()
         self.homeButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '主页'))
-        self.homeButton.clicked.connect(self.homeLabel.show)
+        self.homeButton.clicked.connect(self.button_clicked)
         self.homeButton.setMinimumSize(205, 45)
+        # 记录被选中的按钮
+        self.selectButton = self.homeButton
         # 添加"更多"按钮
         self.moreButton = TPushButton(r=(0, 0, 16, 0))
         self.moreButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '更多'))
         self.moreButton.setMinimumSize(205, 45)
         # 将消息框与编辑框垂直布局
         self.showBox.addWidget(self.massageScroll, 23)
-        self.showBox.addWidget(self.lab2, 9)
+        self.showBox.addWidget(self.sendLabel, 9)
         # 将话题框与按钮垂直布局
         self.topicBox.addWidget(self.homeButton)
         self.topicBox.addWidget(self.topicScroll)
@@ -136,3 +181,10 @@ class MainWindow(RoundShadow):
         self.hbox.setContentsMargins(0, 0, 0, 0)
         # 为窗口背景布局
         self.bglab.setLayout(self.hbox)
+
+    def mousePressEvent(self, QMouseEvent):
+        print(self.childAt(QMouseEvent.x(), QMouseEvent.y()))
+
+    def close(self):
+        self.auto.quit()
+        super().close()

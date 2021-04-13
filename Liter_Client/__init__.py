@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication
 class Client(object):
     def __init__(self, host='127.0.0.1', port=7233):
         self.app = QApplication(sys.argv)  # 新建窗口前必运行app
-        self.ct = connecter(1024, (host, port))  # 设定连接器 BUFSIZ, ADDRESS
+        self.ct = connecter(10240000, (host, port))  # 设定连接器 BUFSIZ, ADDRESS
 
     def start(self):
         self.ct.start()  # 启动连接器

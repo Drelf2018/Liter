@@ -62,7 +62,8 @@ class connecter(QThread):
             try:
                 data = json.loads(data)
                 # 将解析好的 json 数据发送给窗体
-                self.signal[cmd].emit(data)
+                if cmd in self.signal:
+                    self.signal[cmd].emit(data)
             except Exception as e:
                 print(e)
 

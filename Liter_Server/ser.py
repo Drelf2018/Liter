@@ -7,7 +7,7 @@ class TCPServer:
     def __init__(self, host='127.0.0.1', port=7233):
         self.HOST = host
         self.PORT = port
-        self.BUFSIZ = 1024
+        self.BUFSIZ = 10240000
         self.ADDRESS = (self.HOST, self.PORT)
         self.ex = futures.ThreadPoolExecutor(max_workers=100)
         self.tcpServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
