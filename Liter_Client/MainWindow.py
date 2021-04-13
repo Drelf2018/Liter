@@ -182,9 +182,6 @@ class MainWindow(RoundShadow):
         # 为窗口背景布局
         self.bglab.setLayout(self.hbox)
 
-    def mousePressEvent(self, QMouseEvent):
-        print(self.childAt(QMouseEvent.x(), QMouseEvent.y()))
-
     def close(self):
         self.auto.quit()
         super().close()
