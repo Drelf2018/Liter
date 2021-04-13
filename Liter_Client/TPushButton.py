@@ -10,7 +10,8 @@ class TPushButton(QPushButton):
     img 按钮处于三种状态时图片\n
     color 不选用 img 时三种状态下颜色\n
     '''
-    def __init__(self, r=(0, 0, 0, 0), bid=0, img=None, color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=None):
+    def __init__(self, r=(0, 0, 0, 0), bid=0, img=None, color=[Qt.white, QColor(242, 242, 242), QColor(232, 232, 232)], parent=None):
+        # [QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)]
         super(TPushButton, self).__init__(parent)
         self.r = r
         self.bid = bid

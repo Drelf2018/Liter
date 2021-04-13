@@ -18,7 +18,7 @@ class LoginWindow(RoundShadow):
             print('账号或密码错误')
 
     def __init__(self, connecter, pic='img\\bg.jpg'):
-        super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic, 'Liter')
+        super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)
         self.connecter = connecter  # 与服务端的连接器
         self.close_signal.connect(self.check_login)  # 连接槽函数
         self.connecter.setSignal('/login', self.close_signal)  # 将信号告诉连接器
@@ -45,14 +45,14 @@ class LoginWindow(RoundShadow):
         accountEdit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
         accountEdit.setFont(QFont('msyh', 14))
         accountEdit.setGeometry(0, 10, 240, 45)
-        accountEdit.setText('drelf')
+        # accountEdit.setText('drelf')
         # 新建密码文本框并设置大小位置
         passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
         passwordEdit.setPlaceholderText('密码')  # 默认文字
         passwordEdit.setEchoMode(TLineEdit.Password)  # 密码模式 输入字符用圆点代替
-        passwordEdit.setFont(QFont('msyh', 8))
+        passwordEdit.setFont(QFont('msyh', 14))
         passwordEdit.setGeometry(0, 65, 240, 45)
-        passwordEdit.setText('drelf...')
+        # passwordEdit.setText('drelf...')
         # 限制输入字符
         reg = QRegExp('[a-zA-Z0-9!@#%^&*()_.]+$')  # 创建一个正则表达式对象
         validator = QRegExpValidator(reg, self)  # 创建一个过滤器对象

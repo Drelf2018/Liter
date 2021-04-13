@@ -40,6 +40,10 @@ class RoundShadow(QWidget):
         self.bglab = TLabel((0, self.r, self.r, 0), img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
 
+    def setTitle(self, title):
+        self.title = title
+        self.update()
+
     def paintEvent(self, event):
         # 画阴影
         shadow_pat = QPainter(self)
@@ -59,7 +63,6 @@ class RoundShadow(QWidget):
             self.color.setAlpha(self.alpha(i))
             shadow_pat.setPen(self.color)
             shadow_pat.drawPath(shadow_path)
-
         # 画圆角标题栏
         round_pat = QPainter(self)
         round_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
@@ -67,19 +70,24 @@ class RoundShadow(QWidget):
         round_pat.setBrush(QColor(187, 222, 255))  # 蓝色笔刷
         title_path = RoundPath(QRectF(self.s, self.s, self.width()-2*self.s, 40), (self.r, 0, 0, self.r))
         round_pat.drawPath(title_path)
-
+        # 画图标和标题
+        x, y = self.r+8, self.r+22
+        icon_pat = QPainter(self)
+        icon_pat.setRenderHint(icon_pat.Antialiasing)  # 抗锯齿
+        icon_pat.setFont(QFont('msyh', 18, QFont.Bold))
+        icon_pat.setPen(QColor(0, 0, 0, 125))  # 黑笔
+        icon_pat.drawText(x-1, y+1, 'Liter')  # 画阴影
+        icon_pat.setPen(Qt.white)  # 白笔
+        icon_pat.drawText(x, y, 'Liter')  # 画字体
         # 画标题
         if self.title:
-            x, y = self.r+8, self.r+22
             title_pat = QPainter(self)
-            title_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿
-            title_pat.setFont(QFont('msyh', 18, QFont.Bold))
-            # 画阴影
+            title_pat.setRenderHint(title_pat.Antialiasing)  # 抗锯齿
+            title_pat.setFont(QFont('msyh', 14, QFont.Bold))
             title_pat.setPen(QColor(0, 0, 0, 125))  # 黑笔
-            title_pat.drawText(x-1, y+1, self.title)
-            # 画字体
+            title_pat.drawText(QRectF(self.s-1, self.s+1, self.width()-2*self.s, 40), Qt.AlignCenter, self.title)  # 画阴影
             title_pat.setPen(Qt.white)  # 白笔
-            title_pat.drawText(x, y, self.title)
+            title_pat.drawText(QRectF(self.s, self.s, self.width()-2*self.s, 40), Qt.AlignCenter, self.title)  # 画字体
 
     def mousePressEvent(self, QMouseEvent):
         '鼠标点击 检测点击位置判断是否可移动\n清除所有文本框的选中状态'

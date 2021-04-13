@@ -13,18 +13,21 @@ class MainWindow(RoundShadow):
     update_signal = pyqtSignal(list)  # 更新消息的信号
 
     def __init__(self, connecter):
-        super(MainWindow, self).__init__(820, 640, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, None, 'Liter')
+        super(MainWindow, self).__init__(820, 640, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, None, '主页')
         self.connecter = connecter  # 与服务端的连接器
         self.massageWidget = QWidget()  # 消息框
         self.topicWidget = QWidget()  # 话题框
         self.update_signal.connect(self.change_massage)  # 连接槽函数
         self.connecter.setSignal('/update', self.update_signal)  # 将信号告诉连接器
         self.initUI()
+        self.initTopic()
 
     def update_massage(self):
         '获取新消息'
+        self.homeLabel.hide()  # 隐藏主页
         first = self.sender().bid  # https://www.5axxw.com/questions/content/dpc5m4
         child = self.massageWidget.children()  # 获取原有消息 可能为空
+        self.setTitle(self.sender().text[2])  # 改标题
         if child and child[0].massage['mid'] == first:
             # 消息不为空且需要更新的话题是当前话题
             self.connecter.send('/update {}'.format(child[-1].massage['next']))
@@ -52,13 +55,14 @@ class MainWindow(RoundShadow):
         '向话题框添加话题'
         self.topicWidget = QWidget()
         self.topicWidget.resize(205, 0)
+        theight = 75
         twheight = 0
         for topic in self.connecter.topics:
             tb = TPushButton(bid=topic['first'], parent=self.topicWidget)
-            tb.setTitle((Qt.white, QFont('msyh', 11), topic['name']))
-            tb.setGeometry(0, twheight, 205, 275)
+            tb.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), topic['name']))
+            tb.setGeometry(0, twheight, 205, theight)
             tb.clicked.connect(self.update_massage)
-            twheight += 275
+            twheight += theight
         self.topicWidget.setMinimumSize(205, twheight)
         self.topicScroll.setWidget(self.topicWidget)
         self.topicScroll.verticalScrollBar().setValue(self.topicScroll.verticalScrollBar().minimum())
@@ -76,15 +80,21 @@ class MainWindow(RoundShadow):
         self.closeButton = TPushButton(img=['img/close1.png', 'img/close2.png', 'img/close2.png'], parent=self)
         self.closeButton.setGeometry(790, 16, 26, 26)
         self.closeButton.clicked.connect(self.close)
+        # 添加聊天框背景
+        bg = TLabel(img='img/bg.jpg', parent=self.bglab)
+        bg.resize(self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
+        bg = TLabel(color=(QColor(255, 255, 255, 190)), parent=self.bglab)
+        bg.resize(self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
         # 添加消息滚动框
         self.massageScroll = TScrollArea()
         self.massageScroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.massageScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.massageScroll.setFrameShape(QFrame.NoFrame)
+        self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
         self.lab2 = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
         self.sendButton = TPushButton(r=(8, 8, 8, 8), parent=self.lab2)
-        self.sendButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '发送'))
+        self.sendButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '发送'))
         self.sendButton.clicked.connect(lambda: self.connecter.send(''))
         self.sendButton.setGeometry(505, 120, 100, 40)
         # 添加布局并设置布局中组件间距
@@ -94,24 +104,27 @@ class MainWindow(RoundShadow):
         self.showBox.setSpacing(0)
         self.topicBox.setSpacing(0)
         self.hbox.setSpacing(0)
-        # 将消息框与编辑框垂直布局
-        self.showBox.addWidget(self.massageScroll, 23)
-        self.showBox.addWidget(self.lab2, 9)
         # 添加话题滚动框
         self.topicScroll = TScrollArea()
         self.topicScroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.topicScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.topicScroll.setFrameShape(QFrame.NoFrame)
         self.topicWidget.resize(205, 55)
+        # 主页
+        self.homeLabel = TLabel(text=(Qt.black, QFont('msyh', 50, QFont.Bold), '主页'), parent=self)
+        self.homeLabel.setGeometry(self.s, self.s+40, self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
         # 主页按钮
         self.homeButton = TPushButton()
-        self.homeButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '主页'))
-        self.homeButton.clicked.connect(self.initTopic)
+        self.homeButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '主页'))
+        self.homeButton.clicked.connect(self.homeLabel.show)
         self.homeButton.setMinimumSize(205, 45)
         # 添加"更多"按钮
         self.moreButton = TPushButton(r=(0, 0, 16, 0))
-        self.moreButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '更多'))
+        self.moreButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '更多'))
         self.moreButton.setMinimumSize(205, 45)
+        # 将消息框与编辑框垂直布局
+        self.showBox.addWidget(self.massageScroll, 23)
+        self.showBox.addWidget(self.lab2, 9)
         # 将话题框与按钮垂直布局
         self.topicBox.addWidget(self.homeButton)
         self.topicBox.addWidget(self.topicScroll)

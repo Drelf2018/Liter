@@ -11,6 +11,8 @@ class TLabel(QLabel):
     带圆角的展示框\n
     r 圆角半径，类型为列表，从左上开始逆时针顺序\n
     img 要展示的图片
+    color 纯色
+    text 颜色、字体、文本
     '''
     def __init__(self, r=(0, 0, 0, 0), img=None, color=Qt.white, text=None, parent=None):
         super(TLabel, self).__init__(parent)

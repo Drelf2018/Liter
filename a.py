@@ -1,2 +1,2 @@
 from Liter_Client import Client
-Client().start()
+Client(host='frp.drelf.cn').start()

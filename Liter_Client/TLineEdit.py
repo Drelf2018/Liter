@@ -1,5 +1,5 @@
 from PyQt5.QtCore import (Qt, QPointF)
-from PyQt5.QtGui import (QPainter, QColor, QPen)
+from PyQt5.QtGui import (QPainter, QColor, QPen, QFont)
 from PyQt5.QtWidgets import (QLineEdit, QAction)
 
 
@@ -22,11 +22,19 @@ class TLineEdit(QLineEdit):
         self.selectApply.setIcon(icon[0])
         # LeadingPosition 表示图标在左侧
         self.addAction(self.selectApply, self.LeadingPosition)
+        self.textChanged.connect(self.change_font)
 
     def change_icon(self, t):
         '修改图标'
         self.selectApply.setIcon(self.icon[t])
         self.update()
+
+    def change_font(self):
+        if self.echoMode() == 2:
+            if self.text():
+                self.setFont(QFont('msyh', 8))
+            else:
+                self.setFont(QFont('msyh', 14))
 
     def paintEvent(self, event):
         '绘制文本框'
