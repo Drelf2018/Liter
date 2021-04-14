@@ -14,6 +14,9 @@ AVAILABLE_COMMANDS = {
 
 
 def analysis_command(cmd: str, need=None, user=None):
+    '''
+    user 是列表 第一项为用户 uid 第二项为用户 ip
+    '''
     args = cmd.split(' ')
     if need and not args[0] == need:
         return False
@@ -41,6 +44,7 @@ def analysis_command(cmd: str, need=None, user=None):
                     uid = resp[i]['from']
                     auth, nick = um.users['uid'][uid]['authority'], um.users['uid'][uid]['nickname']
                     resp[i]['from'] = '【{}】{}'.format(auth, nick)
+                    resp[i]['from_me'] = (uid == user[0])
                 resp = str(json.dumps(resp, ensure_ascii=False))
             elif args[0] == '/sendto':
                 mid = tm.get_last_mid(para[0])

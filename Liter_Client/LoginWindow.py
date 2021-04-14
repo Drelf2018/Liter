@@ -41,30 +41,38 @@ class LoginWindow(RoundShadow):
         lab = TLabel((20, 20, 20, 20), color=QColor(255, 255, 255, 155), parent=self)
         lab.setGeometry(8+(540-245)/2, 150, 245, 175)
         # 新建账号文本框并设置大小位置
-        accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-        accountEdit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
-        accountEdit.setFont(QFont('msyh', 14))
-        accountEdit.setGeometry(0, 10, 240, 45)
+        self.accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
+        self.accountEdit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
+        self.accountEdit.setFont(QFont('msyh', 14))
+        self.accountEdit.setGeometry(0, 10, 240, 45)
         # accountEdit.setText('drelf')
         # 新建密码文本框并设置大小位置
-        passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-        passwordEdit.setPlaceholderText('密码')  # 默认文字
-        passwordEdit.setEchoMode(TLineEdit.Password)  # 密码模式 输入字符用圆点代替
-        passwordEdit.setFont(QFont('msyh', 14))
-        passwordEdit.setGeometry(0, 65, 240, 45)
+        self.passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
+        self.passwordEdit.setPlaceholderText('密码')  # 默认文字
+        self.passwordEdit.setEchoMode(TLineEdit.Password)  # 密码模式 输入字符用圆点代替
+        self.passwordEdit.setFont(QFont('msyh', 14))
+        self.passwordEdit.setGeometry(0, 65, 240, 45)
         # passwordEdit.setText('drelf...')
         # 限制输入字符
         reg = QRegExp('[a-zA-Z0-9!@#%^&*()_.]+$')  # 创建一个正则表达式对象
         validator = QRegExpValidator(reg, self)  # 创建一个过滤器对象
-        accountEdit.setValidator(validator)  # 限制用户名范围
-        passwordEdit.setValidator(validator)  # 限制密码范围
+        self.accountEdit.setValidator(validator)  # 限制用户名范围
+        self.passwordEdit.setValidator(validator)  # 限制密码范围
         # 新建登录按钮并设置大小位置
         loginButton = TPushButton(r=(10, 10, 10, 10), color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=lab)
         loginButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '登录'))
         loginButton.clicked.connect(
             lambda: self.connecter.login({
-                'username': accountEdit.text(),
-                'password': passwordEdit.text()
+                'username': self.accountEdit.text(),
+                'password': self.passwordEdit.text()
             })
         )
         loginButton.setGeometry(10, 125, 225, 34.6)
+
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.key() in [16777220, 16777221]:
+            if self.accountEdit.hasFocus() or self.passwordEdit.hasFocus():
+                self.connecter.login({
+                    'username': self.accountEdit.text(),
+                    'password': self.passwordEdit.text()
+                })

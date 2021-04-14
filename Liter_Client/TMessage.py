@@ -11,7 +11,7 @@ class TMessage(QLabel):
         self.textedit = QTextEdit(self)  # 放置消息的文本框
         self.textedit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         self.text = massage['text'].split('[img]')  # 裁剪出消息
-        self.identity = '{} {}'.format(massage['from'], massage['time'])  # 发消息人的身份
+        self.identity = '{}{} {}'.format('√' if massage['from_me'] else '×', massage['from'], massage['time'])  # 发消息人的身份
         self.massage = massage  # 保存整条消息备用
         self.initUI()
 

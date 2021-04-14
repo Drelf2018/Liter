@@ -5,8 +5,8 @@ from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
 from .TMessage import TMessage
 from .TScrollArea import TScrollArea
-from PyQt5.QtCore import (Qt, pyqtSignal, QThread)
-from PyQt5.QtGui import (QColor, QFont)
+from PyQt5.QtCore import (Qt, pyqtSignal, QThread, QEvent)
+from PyQt5.QtGui import (QColor, QFont, QKeyEvent)
 from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
 
 
@@ -31,6 +31,27 @@ class autoUpdate(QThread):
                     self.mw.remake = False
                     self.mw.connecter.send('/update {}'.format(first))
             time.sleep(0.45)  # 太快服务器反应不过来
+
+
+class TTextEdit(QTextEdit):
+    def __init__(self, mainwindow, parent=None):
+        super(TTextEdit, self).__init__(parent)
+        self.mw = mainwindow
+
+    def keyPressEvent(self, keyEvent):
+        '回车发送 CTRL+Enter换行'
+        # 按钮 https://blog.csdn.net/u012308586/article/details/104982137/
+        # 事件 https://www.yuque.com/apachecn/aahuk0/docs_qkeyevent
+        if keyEvent.key() in [16777220, 16777221]:  # 主键盘和小键盘的回车
+            if keyEvent.modifiers() == Qt.ControlModifier:  # 修饰键是否是 CTRL
+                # 构造新的不含修饰键的事件发给 QTextEdit 让他换行
+                super().keyPressEvent(QKeyEvent(QEvent.KeyPress, Qt.Key_Enter, Qt.NoModifier))
+            else:
+                # 发送消息
+                self.mw.sendTo()
+        else:
+            # 直接给 QTextEdit 让他操作文本
+            super().keyPressEvent(keyEvent)
 
 
 class MainWindow(RoundShadow):
@@ -130,7 +151,7 @@ class MainWindow(RoundShadow):
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
         self.sendLabel = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
-        self.sendEdit = QTextEdit(self.sendLabel)
+        self.sendEdit = TTextEdit(self, self.sendLabel)
         self.sendEdit.setFont(QFont('msyh', 11))
         self.sendEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
