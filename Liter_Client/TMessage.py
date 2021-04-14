@@ -1,7 +1,11 @@
 from PyQt5.QtWidgets import (QLabel, QTextEdit)
 from PyQt5.QtCore import (Qt, QRect)
 from PyQt5.QtGui import (QPainter, QFont, QColor, QPen)
+import requests
+from PIL import Image
+from io import BytesIO
 import math
+import re
 
 
 def is_chinese(uchar):
@@ -18,7 +22,6 @@ class TMessage(QLabel):
         self.textedit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         self.text = massage['text'].replace('<sp/>', ' ')  # 空格替换
         self.text = self.text.split('<br/>')  # 裁剪出消息
-        # 图片 <img src="/i/eg_tulip.jpg"/>
         self.identity = massage['from']  # 发消息人的身份
         self.count = 0
         for chn in self.identity:
@@ -53,20 +56,46 @@ class TMessage(QLabel):
         fontsize = self.font.pixelSize()  # 字体像素值
         maxWidth = 0  # 最大宽度
         maxHeight = 0  # 最大高度
+        picHeight = 0  # 图片高度
+        patten = re.compile(r'<img src="[a-zA-z]+://[^\s]*"/>')
+        while '' in self.text:
+            self.text.remove('')  # 删除空字符 https://blog.csdn.net/crack6677/article/details/107728841
         for t in self.text:
-            count = 0
-            for chn in t:
-                if is_chinese(chn):
-                    count += 1
-            count = (len(t) - count) + count * 2  # 字节 汉字占两字节
-            if fontsize*count/2 <= self.textedit.maximumWidth():
-                maxWidth = max(maxWidth, fontsize*count/2)
+            img = re.search(patten, t)
+            if not img:
+                count = 0
+                for chn in t:
+                    if is_chinese(chn):
+                        count += 1
+                count = (len(t) - count) + count * 2  # 字节 汉字占两字节
+                if fontsize*count/2 <= self.textedit.maximumWidth():
+                    maxWidth = max(maxWidth, fontsize*count/2)
+                else:
+                    maxWidth = self.textedit.maximumWidth()
+                self.textedit.append(t)
+                maxHeight += math.ceil(count/52)
             else:
-                maxWidth = self.textedit.maximumWidth()
-            self.textedit.append(t)
-            maxHeight += math.ceil(count/52)
+                url = t[10:-3]
+                try:
+                    response = requests.get(url)
+                    image = Image.open(BytesIO(response.content))  # 读取网络图片 https://blog.csdn.net/zwyact/article/details/100133350
+                    w, h = image.width, image.height
+                    new_w = self.textedit.maximumWidth()/2
+                    t = t[0:-2] + 'width="{}"/>'.format(new_w)  # 改html图片大小 https://www.w3school.com.cn/tiy/t.asp?f=eg_html_image_size
+                    self.textedit.append(t)
+                    maxWidth = max(maxWidth, self.textedit.maximumWidth()/2)
+                    picHeight += h/w*new_w
+                except Exception:
+                    t = '<图片错误>'
+                    count = 10  # 字节 汉字占两字节
+                    if fontsize*count/2 <= self.textedit.maximumWidth():
+                        maxWidth = max(maxWidth, fontsize*count/2)
+                    else:
+                        maxWidth = self.textedit.maximumWidth()
+                    self.textedit.append(t)
+                    maxHeight += math.ceil(count/52)
         maxWidth += 10
-        maxHeight = 23*maxHeight+10
+        maxHeight = picHeight+23*maxHeight+10
         self.textedit.resize(maxWidth, maxHeight)
         if self.massage['from_me']:
             self.textedit.move(545-self.textedit.width(), 35)

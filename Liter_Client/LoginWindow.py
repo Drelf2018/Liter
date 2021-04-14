@@ -1,4 +1,6 @@
 import os
+import json
+import requests
 from .TLabel import TLabel
 from .TLineEdit import TLineEdit
 from .TPushButton import TPushButton
@@ -17,7 +19,9 @@ class LoginWindow(RoundShadow):
         else:
             print('气泡-账号或密码错误')
 
-    def __init__(self, connecter, pic='img\\bg.jpg'):
+    def __init__(self, connecter, pic='http://bing.getlove.cn/latelyBingImageStory'):  # img\\bg.jpg
+        r = requests.get(pic)
+        pic = 'https:'+json.loads(r.text)[0]['CDNUrl']
         super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)
         self.connecter = connecter  # 与服务端的连接器
         self.close_signal.connect(self.check_login)  # 连接槽函数

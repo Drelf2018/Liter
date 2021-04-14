@@ -2,8 +2,9 @@ from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (QImage, QBrush, QPainter)
 from .TPath import RoundPath
-import cv2
-import os
+import requests
+from PIL import Image, ImageFilter, ImageQt
+from io import BytesIO
 
 
 class TLabel(QLabel):
@@ -21,11 +22,15 @@ class TLabel(QLabel):
         self.color = color
         self.text = text
         if img:
-            os.chdir(os.path.dirname(__file__))
-            src = cv2.imread(img)  # opencv读取图片
-            img = cv2.GaussianBlur(src, (0, 0), 10)  # 高斯模糊
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
-            self.img = QImage(img[:], img.shape[1], img.shape[0], img.shape[1] * 3, QImage.Format_RGB888)  # pyqt5转换成自己能放的图片格式
+            response = requests.get(img)
+            image = Image.open(BytesIO(response.content))  # 读取网络图片 https://blog.csdn.net/zwyact/article/details/100133350
+            image = image.filter(ImageFilter.GaussianBlur(radius=5))  # 高斯模糊 https://blog.csdn.net/yanshuai_tek/article/details/80653064
+            # 透明图片需要加白色底 https://www.cnblogs.com/RChen/archive/2007/03/31/pil_thumb.html
+            image = image.convert('RGBA')
+            alpha = image.split()[3]
+            bgmask = alpha.point(lambda x: 255-x)
+            image.paste((255, 255, 255), None, bgmask)
+            self.img = ImageQt.ImageQt(image)
 
     def paintEvent(self, event):
         # 画笔设置不描边

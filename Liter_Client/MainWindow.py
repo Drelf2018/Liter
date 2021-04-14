@@ -1,5 +1,8 @@
 import os
+import re
 import time
+import json
+import requests
 from .TLabel import TLabel
 from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
@@ -8,6 +11,21 @@ from .TScrollArea import TScrollArea
 from PyQt5.QtCore import (Qt, pyqtSignal, QThread, QEvent)
 from PyQt5.QtGui import (QColor, QFont, QKeyEvent)
 from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
+
+
+def splitImg(text):
+    '分割图片'
+    patten = re.compile(r'<img src="[a-zA-z]+://[^\s]*"/>')
+    split_point = [0]
+    for m in re.finditer(patten, text):
+        if not split_point[-1] == m.start():
+            split_point.append(m.start())
+        split_point.append(m.end())
+    count = 0  # 统计加了几个转行
+    for i in split_point[1:]:
+        text = text[0:i+count] + '\n' + text[i+count:]
+        count += 1
+    return text
 
 
 class autoUpdate(QThread):
@@ -74,6 +92,7 @@ class MainWindow(RoundShadow):
         if not self.selectButton == self.homeButton:
             text = self.sendEdit.toPlainText()
             if text:
+                text = splitImg(text)
                 text = text.replace(' ', '<sp/>')
                 text = text.replace('\n', '<br/>')
                 self.connecter.send('/sendto {} {}'.format(self.selectButton.tid, text))
@@ -141,7 +160,8 @@ class MainWindow(RoundShadow):
         self.closeButton.setGeometry(790, 16, 26, 26)
         self.closeButton.clicked.connect(self.close)
         # 添加聊天框背景
-        bg = TLabel(img='img/bg.jpg', parent=self.bglab)
+        r = requests.get('http://bing.getlove.cn/latelyBingImageStory')
+        bg = TLabel(img='https:'+json.loads(r.text)[1]['CDNUrl'], parent=self.bglab)
         bg.resize(self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
         bg = TLabel(color=(QColor(255, 255, 255, 190)), parent=self.bglab)
         bg.resize(self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
