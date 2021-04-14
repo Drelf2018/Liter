@@ -4,6 +4,7 @@ from collections import deque
 from enum import Enum
 from math import cos, pi
 
+from PyQt5.Qt import PYQT_VERSION_STR
 from PyQt5.QtCore import QDateTime, Qt, QTimer
 from PyQt5.QtGui import QWheelEvent
 from PyQt5.QtWidgets import QApplication, QScrollArea
@@ -14,6 +15,9 @@ class TScrollArea(QScrollArea):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        if PYQT_VERSION_STR > '5.13.2':
+            self.smoothMode = SmoothMode(SmoothMode.NO_SMOOTH)
+            return
         self.fps = 60
         self.duration = 200
         self.stepsTotal = 0

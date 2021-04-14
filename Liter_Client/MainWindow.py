@@ -74,6 +74,7 @@ class MainWindow(RoundShadow):
         if not self.selectButton == self.homeButton:
             text = self.sendEdit.toPlainText()
             if text:
+                text = text.replace('/', '//')
                 text = text.replace('\n', '<br/>')
                 self.connecter.send('/sendto {} {}'.format(self.selectButton.tid, text))
                 self.sendEdit.clear()
@@ -205,6 +206,5 @@ class MainWindow(RoundShadow):
         self.bglab.setLayout(self.hbox)
 
     def close(self):
-        self.connecter.send('/close')
         self.auto.quit()
         super().close()

@@ -69,5 +69,6 @@ class connecter(QThread):
 
     def quit(self):
         '断开连接'
+        self.send('/close')
         self.tcpClientSocket.close()
         super().quit()

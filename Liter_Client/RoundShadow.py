@@ -94,7 +94,7 @@ class RoundShadow(QWidget):
         if QMouseEvent.button() == Qt.LeftButton:
             # 鼠标点击点的相对位置
             self.m_DragPosition = QMouseEvent.globalPos()-self.pos()
-            print((self.m_DragPosition.x(), self.m_DragPosition.y()))
+            # print((self.m_DragPosition.x(), self.m_DragPosition.y()))
             if self.m_DragPosition.y() <= 40 + self.s:
                 self.m_drag = True
 

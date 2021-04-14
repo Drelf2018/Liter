@@ -18,12 +18,21 @@ class TMessage(QLabel):
         self.textedit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         self.text = massage['text'].split('<br/>')  # 裁剪出消息
         # 图片 <img src="/i/eg_tulip.jpg"/>
-        self.identity = '{}{} {}'.format('√' if massage['from_me'] else '×', massage['from'], massage['time'])  # 发消息人的身份
+        self.identity = massage['from']  # 发消息人的身份
+        self.count = 0
+        for chn in self.identity:
+            if is_chinese(chn):
+                self.count += 1
+        self.count = (len(self.identity) - self.count)/2 + self.count  # 统计多少个汉字
+        self.time_ip = [False, '{} {}'.format(massage['time'], massage['ip'])]
         self.massage = massage  # 保存整条消息备用
         self.initUI()
 
     def __str__(self):
         return self.textedit.toPlainText()
+
+    def mousePressEvent(self, QMouseEvent):
+        self.time_ip[0] = not self.time_ip[0]
 
     def initUI(self):
         self.textedit.setMaximumWidth(530)  # 限制宽度最大值
@@ -58,6 +67,8 @@ class TMessage(QLabel):
         maxWidth += 10
         maxHeight = 23*maxHeight+10
         self.textedit.resize(maxWidth, maxHeight)
+        if self.massage['from_me']:
+            self.textedit.move(545-maxWidth, 35)
 
     def paintEvent(self, event):
         '绘制消息框'
@@ -76,9 +87,17 @@ class TMessage(QLabel):
         identity_pat.setPen(Qt.red)
         identity_pat.setBrush(QColor(229, 229, 229))
         identity_pat.setRenderHint(identity_pat.Antialiasing)
-        identity_pat.drawRoundedRect(QRect(10, 25, 50, 50), 25, 25)  # 头像
+        if not self.massage['from_me']:
+            identity_pat.drawRoundedRect(QRect(10, 25, 50, 50), 25, 25)  # 他人头像
+        else:
+            identity_pat.drawRoundedRect(QRect(555, 25, 50, 50), 25, 25)  # 自己头像
         identity_pat.setPen(Qt.gray)
         font = QFont('msyh', 10, QFont.Bold)
         font.setPixelSize(14)
         identity_pat.setFont(font)
-        identity_pat.drawText(5, 17, self.identity)  # 昵称
+        if self.massage['from_me']:
+            identity_pat.drawText(595-self.count*font.pixelSize(), 17, self.identity)  # 昵称
+        else:
+            identity_pat.drawText(5, 17, self.identity)  # 昵称
+        if self.time_ip[0]:
+            identity_pat.drawText(QRect(0, 7, 615, 10), Qt.AlignCenter, self.time_ip[1])  # 时间和ip
