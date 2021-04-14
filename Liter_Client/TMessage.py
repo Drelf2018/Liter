@@ -63,12 +63,12 @@ class TMessage(QLabel):
             else:
                 maxWidth = self.textedit.maximumWidth()
             self.textedit.append(t)
-            maxHeight += math.ceil(count/26)
+            maxHeight += math.ceil(count/52)
         maxWidth += 10
         maxHeight = 23*maxHeight+10
         self.textedit.resize(maxWidth, maxHeight)
         if self.massage['from_me']:
-            self.textedit.move(545-maxWidth, 35)
+            self.textedit.move(545-self.textedit.width(), 35)
 
     def paintEvent(self, event):
         '绘制消息框'

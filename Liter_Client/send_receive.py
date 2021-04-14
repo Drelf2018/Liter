@@ -65,7 +65,7 @@ class connecter(QThread):
                 if cmd in self.signal:
                     self.signal[cmd].emit(data)
             except Exception as e:
-                print(e)
+                print(e, data)
 
     def quit(self):
         '断开连接'
