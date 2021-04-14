@@ -4,13 +4,20 @@ from PyQt5.QtGui import (QPainter, QFont, QColor, QPen)
 import math
 
 
+def is_chinese(uchar):
+    '判断一个unicode是否是汉字'
+    # https://blog.csdn.net/qq_31112205/article/details/103972831
+    return uchar >= u'\u4e00' and uchar <= u'\u9fa5'
+
+
 class TMessage(QLabel):
     '单条消息'
     def __init__(self, massage, from_me=True, parent=None):
         super(TMessage, self).__init__(parent)
         self.textedit = QTextEdit(self)  # 放置消息的文本框
         self.textedit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
-        self.text = massage['text'].split('[img]')  # 裁剪出消息
+        self.text = massage['text'].split('<br/>')  # 裁剪出消息
+        # 图片 <img src="/i/eg_tulip.jpg"/>
         self.identity = '{}{} {}'.format('√' if massage['from_me'] else '×', massage['from'], massage['time'])  # 发消息人的身份
         self.massage = massage  # 保存整条消息备用
         self.initUI()
@@ -33,17 +40,21 @@ class TMessage(QLabel):
         self.resize(615, self.textedit.height()+50)  # 放入文字后调整组件大小
 
     def setText(self):
-        magic = 20  # 字体像素值
+        fontsize = self.font.pixelSize()  # 字体像素值
         maxWidth = 0  # 最大宽度
         maxHeight = 0  # 最大高度
         for t in self.text:
-            if magic*len(t) <= self.textedit.maximumWidth():
-                maxWidth = max(maxWidth, magic*len(t))
+            count = 0
+            for chn in t:
+                if is_chinese(chn):
+                    count += 1
+            count = (len(t) - count) + count * 2  # 字节 汉字占两字节
+            if fontsize*count/2 <= self.textedit.maximumWidth():
+                maxWidth = max(maxWidth, fontsize*count/2)
             else:
                 maxWidth = self.textedit.maximumWidth()
             self.textedit.append(t)
-        for t in self.text:
-            maxHeight += math.ceil(len(t)/26)
+            maxHeight += math.ceil(count/26)
         maxWidth += 10
         maxHeight = 23*maxHeight+10
         self.textedit.resize(maxWidth, maxHeight)
