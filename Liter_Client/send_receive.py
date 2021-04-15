@@ -47,6 +47,7 @@ class connecter(QThread):
             # 非主动断开时报错才打印
             if '你的主机中的软件中止了一个已建立的连接' not in str(e):
                 print(e)
+            self.tcpClientSocket.close()
 
     def analysis(self, cmd, data):
         '分析数据'

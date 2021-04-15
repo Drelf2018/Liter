@@ -44,7 +44,7 @@ def analysis_command(cmd: str, need=None, user=None):
                     uid = resp[i]['from']
                     auth, nick = um.users['uid'][uid]['authority'], um.users['uid'][uid]['nickname']
                     resp[i]['from'] = '[{}]{}'.format(auth, nick)
-                    resp[i]['from_me'] = (uid == user[0])
+                    resp[i]['from_me'] = 1 if uid == user[0] else 0
                 resp = str(json.dumps(resp, ensure_ascii=False))
             elif args[0] == '/sendto':
                 mid = tm.get_last_mid(para[0])

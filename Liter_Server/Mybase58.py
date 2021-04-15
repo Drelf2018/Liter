@@ -24,3 +24,7 @@ def decode(msg: str) -> str:
         msg = chr(temp % 256) + msg
         temp //= 256
     return msg
+
+
+if __name__ == '__main__':
+    print(encode('ABC123'))

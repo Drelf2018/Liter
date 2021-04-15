@@ -172,15 +172,17 @@ class MainWindow(RoundShadow):
         self.massageScroll.setFrameShape(QFrame.NoFrame)
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
-        self.sendLabel = TLabel((0, 16, 0, 0), color=QColor(0, 255, 0, 155))
+        self.sendLabel = TLabel((0, 16, 0, 0))
         self.sendEdit = TTextEdit(self, self.sendLabel)
         self.sendEdit.setFont(QFont('msyh', 11))
         self.sendEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sendEdit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))  # 取消背景
         self.sendEdit.setGeometry(10, 10, 595, 105)  # 初始位置以及大小
+        self.sendEdit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         # 发送按钮
-        self.sendButton = TPushButton(r=(8, 8, 8, 8), parent=self.sendLabel)
-        self.sendButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '发送'))
+        self.sendButton = TPushButton(r=(8, 8, 8, 8), color=[QColor(217, 135, 89), QColor(225, 163, 126), QColor(217, 135, 89)], parent=self.sendLabel)
+        self.sendButton.setTitle((Qt.white, QFont('msyh', 11, QFont.Bold), '发送'))
         self.sendButton.clicked.connect(self.sendTo)
         self.sendButton.setGeometry(525, 125, 80, 35)
         # 添加布局并设置布局中组件间距

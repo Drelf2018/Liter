@@ -49,14 +49,14 @@ class LoginWindow(RoundShadow):
         self.accountEdit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
         self.accountEdit.setFont(QFont('msyh', 14))
         self.accountEdit.setGeometry(0, 10, 240, 45)
-        # accountEdit.setText('drelf')
+        self.accountEdit.setText('drelf')
         # 新建密码文本框并设置大小位置
         self.passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
         self.passwordEdit.setPlaceholderText('密码')  # 默认文字
         self.passwordEdit.setEchoMode(TLineEdit.Password)  # 密码模式 输入字符用圆点代替
         self.passwordEdit.setFont(QFont('msyh', 14))
         self.passwordEdit.setGeometry(0, 65, 240, 45)
-        # passwordEdit.setText('drelf...')
+        self.passwordEdit.setText('drelf...')
         # 限制输入字符
         reg = QRegExp('[a-zA-Z0-9!@#%^&*()_.]+$')  # 创建一个正则表达式对象
         validator = QRegExpValidator(reg, self)  # 创建一个过滤器对象
