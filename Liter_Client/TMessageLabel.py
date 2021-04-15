@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import (QLabel)
 from PyQt5.QtCore import (Qt, QRect)
-from PyQt5.QtGui import (QPen, QColor, QFont,  QPainter, QFontMetricsF)
+from PyQt5.QtGui import (QPen, QColor, QFont, QBrush, QPainter, QFontMetricsF)
+from .PicWindow import PicWindow
 from PIL import Image, ImageQt
 from io import BytesIO
 import requests
@@ -20,6 +21,7 @@ class TMessageLabel(QLabel):
         self.maxWidth = maxWidth
         self.rwidth = 0
         self.rheight = 0
+        self.picHeight = {}
         if font:
             self.font = font
         else:
@@ -44,8 +46,8 @@ class TMessageLabel(QLabel):
                     new_height = int(image.height/image.width*self.maxWidth/2)  # 图片宽度为限宽一半
                     self.rwidth = max(self.rwidth, self.maxWidth/2)
                     self.rheight += new_height + 3
-                    image = image.resize((self.maxWidth//2, new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
-                    temp.append(image)
+                    new_image = image.resize((self.maxWidth//2, new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
+                    temp.append((new_image, image))
                     continue
                 except Exception:
                     t = '<图片错误>'
@@ -69,6 +71,25 @@ class TMessageLabel(QLabel):
                 self.rheight += self.fm.height() + 3
         return temp
 
+    def mouseDoubleClickEvent(self, QMouseEvent):
+        if QMouseEvent.buttons() == Qt.LeftButton:
+            x = QMouseEvent.pos().x()
+            y = QMouseEvent.pos().y()
+            lastKey = -1
+            if 0 <= x <= self.maxWidth//2:
+                for key in self.picHeight:
+                    if y < key:
+                        break
+                    else:
+                        lastKey = key
+                if lastKey == -1:
+                    lastKey = key
+                if 0 <= y-lastKey <= self.picHeight[lastKey][0]:
+                    PicWindow(self.picHeight[lastKey][1], parent=self).show()
+
+    def mousePressEvent(self, QMouseEvent):
+        QMouseEvent.accept()
+
     def paintEvent(self, event):
         super(TMessageLabel, self).paintEvent(event)
         # 气泡
@@ -77,24 +98,37 @@ class TMessageLabel(QLabel):
         bubble_pat.setPen(QPen(QColor(205, 156, 177), 2))
         bubble_pat.setBrush(QColor(238, 252, 255))
         bubble_pat.setRenderHint(bubble_pat.Antialiasing)
-        if not(len(self.text) == 1 and isinstance(self.text[0], Image.Image)):
+        if not(len(self.text) == 1 and isinstance(self.text[0], tuple) and isinstance(self.text[0][0], Image.Image)):
             bubble_pat.drawRoundedRect(bb, 10, 10)
         # 画正文与图片
         y = 7+8  # 指示画笔垂直绘画位置
         text_pat = QPainter(self)
-        text_pat.setPen(Qt.black)
         text_pat.setFont(self.font)
+        text_pat.setPen(Qt.black)
         text_pat.setRenderHint(text_pat.Antialiasing)  # 抗锯齿
+        brush = QBrush()
         for t in self.text:
             if isinstance(t, str):  # 文本
                 w = self.fm.width(t)
                 h = self.fm.height()
                 text_pat.drawText(QRect(7, y, w, h), Qt.AlignCenter, t)
                 y += h + 3
-            elif isinstance(t, Image.Image):  # 图片
-                pic = ImageQt.toqpixmap(t)
-                text_pat.drawPixmap(7, y, pic)
-                y += t.height + 3
+            elif isinstance(t, tuple) and isinstance(t[0], Image.Image):  # 图片
+                im = t[0].convert('RGBA')
+                alpha = im.split()[3]
+                bgmask = alpha.point(lambda x: 255-x)
+                im.paste((255, 255, 255), None, bgmask)
+                pic = ImageQt.ImageQt(im)
+                brush.setTextureImage(pic)
+                text_pat.save()
+                text_pat.translate(7, y)  # 移动画笔 https://tieba.baidu.com/p/3769108658
+                text_pat.setPen(Qt.NoPen)
+                text_pat.setBrush(brush)
+                text_pat.drawRoundedRect(QRect(0, 0, im.width, im.height), 10, 10)
+                text_pat.restore()
+                if not self.picHeight.get(y):
+                    self.picHeight[y] = (im.height, t[1])
+                y += im.height + 3
             else:
                 pass
         bubble_pat.end()

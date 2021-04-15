@@ -34,21 +34,24 @@ class autoUpdate(QThread):
         super(autoUpdate, self).__init__()
         self.mw = mainwindow
 
+    def update_msg(self):
+        button = self.mw.selectButton
+        if not button == self.mw.homeButton:
+            first = button.bid
+            child = self.mw.massageWidget.children()  # 获取原有消息 可能为空
+            self.mw.setTitle(button.text[2])  # 改标题
+            if child and child[0].massage['mid'] == first:
+                # 消息不为空且需要更新的话题是当前话题
+                self.mw.remake = True
+                self.mw.connecter.send('/update {}'.format(child[-1].massage['mid']))
+            else:
+                self.mw.remake = False
+                self.mw.connecter.send('/update {}'.format(first))
+
     def run(self):
         while True:
-            button = self.mw.selectButton
-            if not button == self.mw.homeButton:
-                first = button.bid
-                child = self.mw.massageWidget.children()  # 获取原有消息 可能为空
-                self.mw.setTitle(button.text[2])  # 改标题
-                if child and child[0].massage['mid'] == first:
-                    # 消息不为空且需要更新的话题是当前话题
-                    self.mw.remake = True
-                    self.mw.connecter.send('/update {}'.format(child[-1].massage['mid']))
-                else:
-                    self.mw.remake = False
-                    self.mw.connecter.send('/update {}'.format(first))
-            time.sleep(0.45)  # 太快服务器反应不过来
+            self.update_msg()
+            time.sleep(5)  # 太快服务器反应不过来
 
 
 class TTextEdit(QTextEdit):
@@ -97,6 +100,7 @@ class MainWindow(RoundShadow):
                 text = text.replace('\n', '<br/>')
                 self.connecter.send('/sendto {} {}'.format(self.selectButton.tid, text))
                 self.sendEdit.clear()
+                self.auto.update_msg()
 
     def button_clicked(self):
         '按钮按下'
@@ -105,6 +109,7 @@ class MainWindow(RoundShadow):
             self.homeLabel.show()  # 显示主页
         else:
             self.homeLabel.hide()  # 隐藏主页
+            self.auto.update_msg()
 
     def change_massage(self, massages):
         '修改消息框内容'
@@ -172,9 +177,11 @@ class MainWindow(RoundShadow):
         self.massageScroll.setFrameShape(QFrame.NoFrame)
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
+        font = QFont('msyh')
+        font.setPixelSize(19)
         self.sendLabel = TLabel((0, 16, 0, 0))
         self.sendEdit = TTextEdit(self, self.sendLabel)
-        self.sendEdit.setFont(QFont('msyh', 11))
+        self.sendEdit.setFont(font)
         self.sendEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))  # 取消背景
