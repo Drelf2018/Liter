@@ -27,4 +27,4 @@ def decode(msg: str) -> str:
 
 
 if __name__ == '__main__':
-    print(encode('ABC123'))
+    print(encode('1145141919'))
