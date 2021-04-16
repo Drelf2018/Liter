@@ -16,9 +16,7 @@ class TMessage(QLabel):
         self.initUI()
 
     def initUI(self):
-        self.font = QFont('msyh')  # 字体
-        self.font.setPixelSize(20)  # 字体像素大小
-        self.TMlab = TMessageLabel(self.text, 520, self.font, self)  # 消息气泡框
+        self.TMlab = TMessageLabel(self.text, parent=self)  # 消息气泡框
         if self.massage['from_me']:
             self.TMlab.move(545-self.TMlab.width(), 25)
         else:
@@ -43,7 +41,7 @@ class TMessage(QLabel):
         else:
             identity_pat.drawRoundedRect(QRect(555, 25, 50, 50), 25, 25)  # 自己头像
         identity_pat.setPen(Qt.gray)
-        font = QFont('msyh', 10, QFont.Bold)
+        font = QFont('微软雅黑', weight=QFont.Bold)
         font.setPixelSize(14)
         identity_pat.setFont(font)
         if self.massage['from_me']:

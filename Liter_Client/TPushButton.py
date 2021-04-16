@@ -57,6 +57,6 @@ class TPushButton(QPushButton):
         # 文字
         if self.text:
             color, font, text = self.text
-            pat.setPen(color)
             pat.setFont(font)
+            pat.setPen(color)
             pat.drawText(self.rect(), Qt.AlignCenter, text)

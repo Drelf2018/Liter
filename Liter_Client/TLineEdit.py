@@ -1,80 +1,96 @@
-from PyQt5.QtCore import (Qt, QPointF)
-from PyQt5.QtGui import (QPainter, QColor, QPen, QFont)
-from PyQt5.QtWidgets import (QLineEdit, QAction)
+from PyQt5.QtCore import (Qt, QPointF, QRect)
+from PyQt5.QtGui import (QPainter, QColor, QPen)
+from PyQt5.QtWidgets import (QLineEdit, QWidget)
 
 
-class TLineEdit(QLineEdit):
+class EXEdit(QLineEdit):
+    def __init__(self, parent=None):
+        super(EXEdit, self).__init__(parent)
+
+    def enterEvent(self, QMouseEvent):
+        QMouseEvent.ignore()
+
+    def mousePressEvent(self, QMouseEvent):
+        QMouseEvent.ignore()
+
+    def leaveEvent(self, QMouseEvent):
+        QMouseEvent.ignore()
+
+    def focusInEvent(self, focusEvent):
+        '获得焦点事件'
+        super(EXEdit, self).focusInEvent(focusEvent)
+        self.parent().pen = self.parent().pen_style['press']
+        self.parent().update()
+        focusEvent.accept()
+
+    def focusOutEvent(self, focusEvent):
+        '失去焦点事件'
+        super(EXEdit, self).focusOutEvent(focusEvent)
+        self.parent().pen = self.parent().pen_style['leave']
+        self.parent().update()
+        focusEvent.accept()
+
+
+class TLineEdit(QWidget):
     '自定义的只含底线的文本框'
-    def __init__(self, icon: list, parent=None):
+    def __init__(self, left, top, width, height, parent=None):
         super(TLineEdit, self).__init__(parent)
-        self.s = ''
+        self.setGeometry(left, top, width, height)
+        self.Edit = EXEdit(self)  # 编辑框
+        # 利用css代码取消边框和背景
+        self.Edit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
+        # 设置位置
+        self.Edit.setGeometry(self.height(), 0.05*self.height(), self.width()-self.height()-5, 0.9*self.height())
         # 三种不同颜色的底画线
         self.pen_style = {
-            'gray': QPen(QColor(229, 229, 229), 3),
-            'dark': QPen(Qt.gray, 3),
-            'blue': QPen(QColor(18, 183, 245), 3)
+            'leave': QPen(QColor(229, 229, 229), 3),
+            'enter': QPen(Qt.gray, 3),
+            'press': QPen(QColor(18, 183, 245), 3)
         }
-        # 文本框前图标 类型为列表 可放置多个
-        self.icon = icon
-        self.pen = self.pen_style['gray']
-        # 为文本框绑定图标
-        self.selectApply = QAction(self)
-        self.selectApply.setIcon(icon[0])
-        # LeadingPosition 表示图标在左侧
-        self.addAction(self.selectApply, self.LeadingPosition)
-        self.textChanged.connect(self.change_font)
+        self.pen = self.pen_style['leave']  # 初始画笔
 
     def change_icon(self, t):
         '修改图标'
         self.selectApply.setIcon(self.icon[t])
         self.update()
 
-    def change_font(self):
-        if self.echoMode() == 2:
-            if self.text():
-                self.setFont(QFont('msyh', 8))
-            else:
-                self.setFont(QFont('msyh', 14))
-
     def paintEvent(self, event):
         '绘制文本框'
-        super(TLineEdit, self).paintEvent(event)
-        # 利用css代码取消边框和背景
-        self.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
-        # 在文本框底部画线
         pat = QPainter(self)
         pat.setPen(self.pen)
         pat.setRenderHint(pat.Antialiasing)
-        pat.drawLine(QPointF(9, self.height()), QPointF(self.width()-5, self.height()))
+        pat.drawRoundedRect(QRect(5, 5, self.height()-10, self.height()-10), self.height()-5, self.height()-5)
+        pat.drawLine(QPointF(0, self.height()), QPointF(self.width(), self.height()))
 
     def enterEvent(self, QMouseEvent):
         '检测鼠标是否移动至文本框并变色'
-        if not self.pen == self.pen_style['blue']:
-            self.pen = self.pen_style['dark']
+        if not self.pen == self.pen_style['press']:
+            self.pen = self.pen_style['enter']
+        self.update()
         QMouseEvent.accept()
 
     def mousePressEvent(self, QMouseEvent):
         '按下文本框 变色'
-        self.pen = self.pen_style['blue']
-        self.selectApply.setIcon(self.icon[1])
-        QMouseEvent.ignore()
+        self.pen = self.pen_style['press']
+        self.Edit.setFocus()
+        self.update()
+        QMouseEvent.accept()
 
     def leaveEvent(self, QMouseEvent):
         '未按下时移开鼠标变色'
-        if self.pen == self.pen_style['dark']:
-            self.pen = self.pen_style['gray']
+        if self.pen == self.pen_style['enter']:
+            self.pen = self.pen_style['leave']
+        self.update()
         QMouseEvent.accept()
 
     def focusInEvent(self, focusEvent):
         '获得焦点事件'
-        super(TLineEdit, self).focusInEvent(focusEvent)
-        self.pen = self.pen_style['blue']
-        self.selectApply.setIcon(self.icon[1])
+        self.pen = self.pen_style['press']
+        self.update()
         focusEvent.accept()
 
     def focusOutEvent(self, focusEvent):
         '失去焦点事件'
-        super(TLineEdit, self).focusOutEvent(focusEvent)
-        self.pen = self.pen_style['gray']
-        self.selectApply.setIcon(self.icon[0])
+        self.pen = self.pen_style['leave']
+        self.update()
         focusEvent.accept()

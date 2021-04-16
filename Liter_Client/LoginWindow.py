@@ -1,4 +1,3 @@
-import os
 import json
 import requests
 from .TLabel import TLabel
@@ -6,7 +5,7 @@ from .TLineEdit import TLineEdit
 from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
 from PyQt5.QtCore import (QRegExp, pyqtSignal)
-from PyQt5.QtGui import (QColor, QIcon, QFont, QRegExpValidator)
+from PyQt5.QtGui import (QColor, QFont, QRegExpValidator)
 
 
 class LoginWindow(RoundShadow):
@@ -14,69 +13,67 @@ class LoginWindow(RoundShadow):
 
     def check_login(self, x):
         if x:
-            print('气泡-登录成功')
             self.close()
         else:
-            print('气泡-账号或密码错误')
+            self.passwordEdit.clear()
+            self.passwordEdit.setPlaceholderText('账号或密码错误')
 
     def __init__(self, connecter, pic='http://bing.getlove.cn/latelyBingImageStory'):  # img\\bg.jpg
         r = requests.get(pic)
         pic = 'https:'+json.loads(r.text)[0]['CDNUrl']
-        super(LoginWindow, self).__init__(540, 420, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, pic)
+        super(LoginWindow, self).__init__(540, 420, img=pic)
         self.connecter = connecter  # 与服务端的连接器
         self.close_signal.connect(self.check_login)  # 连接槽函数
         self.connecter.setSignal('/login', self.close_signal)  # 将信号告诉连接器
         self.initUI()
 
     def initUI(self):
-        # 切换目录
-        os.chdir(os.path.dirname(__file__))
         # 设置标题
         self.setWindowTitle('LoginWindow')
-        # 设置最小化按钮位置和大小 绑定事件
-        minButton = TPushButton(img=['img/min1.png', 'img/min2.png', 'img/min2.png'], parent=self)
-        minButton.setGeometry(479, 16, 26, 26)
-        minButton.clicked.connect(self.showMinimized)
-        # 设置关闭按钮位置和大小 绑定事件
-        closeButton = TPushButton(img=['img/close1.png', 'img/close2.png', 'img/close2.png'], parent=self)
-        closeButton.setGeometry(510, 16, 26, 26)
-        closeButton.clicked.connect(self.close)
+        w, h = self.bglab.width(), self.bglab.height()  # 背景长款 540 380
         # 新建展示框用于放置文本框与按钮
-        lab = TLabel((20, 20, 20, 20), color=QColor(255, 255, 255, 155), parent=self)
-        lab.setGeometry(8+(540-245)/2, 150, 245, 175)
+        self.lab = TLabel((15, 15, 15, 15), color=QColor(255, 255, 255, 155), parent=self.bglab)
+        self.lab.setGeometry(0.2*w, 0.275*h, 0.6*w, 0.45*h)
         # 新建账号文本框并设置大小位置
-        self.accountEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-        self.accountEdit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
-        self.accountEdit.setFont(QFont('msyh', 14))
-        self.accountEdit.setGeometry(0, 10, 240, 45)
-        # self.accountEdit.setText('drelf')
+        self.account = TLineEdit(5, 0.025*h, 0.6*w-10, 0.118*h, self.lab)
+        self.account.Edit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
+        self.account.Edit.setFont(QFont('微软雅黑', 14*h/380))
+        self.account.Edit.setText('drelf')
         # 新建密码文本框并设置大小位置
-        self.passwordEdit = TLineEdit([QIcon('img/1.png'), QIcon('img/2.png')], lab)
-        self.passwordEdit.setPlaceholderText('密码')  # 默认文字
-        self.passwordEdit.setEchoMode(TLineEdit.Password)  # 密码模式 输入字符用圆点代替
-        self.passwordEdit.setFont(QFont('msyh', 14))
-        self.passwordEdit.setGeometry(0, 65, 240, 45)
-        # self.passwordEdit.setText('drelf...')
+        self.password = TLineEdit(5, 0.17*h, 0.6*w-10, 0.118*h, self.lab)  # [QIcon('img/1.png'), QIcon('img/2.png')],
+        self.password.Edit.setPlaceholderText('密码')  # 默认文字
+        self.password.Edit.setEchoMode(self.password.Edit.Password)  # 密码模式 输入字符用圆点代替
+        self.password.Edit.setFont(QFont('微软雅黑', 14*h/380))
+        self.password.Edit.textChanged.connect(lambda: self.password.Edit.setPlaceholderText('密码'))
+        self.password.Edit.setText('drelf...')
         # 限制输入字符
         reg = QRegExp('[a-zA-Z0-9!@#%^&*()_.]+$')  # 创建一个正则表达式对象
         validator = QRegExpValidator(reg, self)  # 创建一个过滤器对象
-        self.accountEdit.setValidator(validator)  # 限制用户名范围
-        self.passwordEdit.setValidator(validator)  # 限制密码范围
+        self.account.Edit.setValidator(validator)  # 限制用户名范围
+        self.password.Edit.setValidator(validator)  # 限制密码范围
         # 新建登录按钮并设置大小位置
-        loginButton = TPushButton(r=(10, 10, 10, 10), color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=lab)
-        loginButton.setTitle((QColor(255, 255, 255), QFont('msyh', 11), '登录'))
+        loginButton = TPushButton(r=(8, 8, 8, 8), color=[QColor(7, 188, 252), QColor(31, 200, 253), QColor(31, 200, 253)], parent=self.lab)
+        loginButton.setTitle((QColor(255, 255, 255), QFont('微软雅黑', 12*h/380), '登录'))
         loginButton.clicked.connect(
             lambda: self.connecter.login({
-                'username': self.accountEdit.text(),
-                'password': self.passwordEdit.text()
+                'username': self.account.Edit.text(),
+                'password': self.password.Edit.text()
             })
         )
-        loginButton.setGeometry(10, 125, 225, 34.6)
+        loginButton.setGeometry(10, 0.31*h, 0.6*w-20, 0.118*h)
+
+    def mousePressEvent(self, QMouseEvent):
+        x, y = QMouseEvent.x(), QMouseEvent.y()
+        child = self.childAt(x, y)
+        if not child or not isinstance(child, TLineEdit):
+            self.setFocus()
+        QMouseEvent.accept()
 
     def keyPressEvent(self, QKeyEvent):
-        if QKeyEvent.key() in [16777220, 16777221]:
+        if QKeyEvent.key() in [16777220, 16777221]:  # 回车
             if self.accountEdit.hasFocus() or self.passwordEdit.hasFocus():
                 self.connecter.login({
                     'username': self.accountEdit.text(),
                     'password': self.passwordEdit.text()
                 })
+        QKeyEvent.accept()

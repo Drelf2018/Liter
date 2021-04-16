@@ -55,16 +55,24 @@ class connecter(QThread):
             try:
                 data = json.loads(data)
                 self.topics = data  # 保存获取的话题
-                self.signal['/login'].emit(True)
+                if 'default' in self.signal:
+                    self.signal['default'].emit('True')
+                else:
+                    self.signal['/login'].emit(True)
             except Exception:
                 # 如果 json 解析失败发送False信号给登录窗口
-                self.signal['/login'].emit(False)
+                if 'default' in self.signal:
+                    self.signal['default'].emit('False')
+                else:
+                    self.signal['/login'].emit(False)
         else:
             try:
-                data = json.loads(data)
+                jsdata = json.loads(data)
                 # 将解析好的 json 数据发送给窗体
                 if cmd in self.signal:
-                    self.signal[cmd].emit(data)
+                    self.signal[cmd].emit(jsdata)
+                elif 'default' in self.signal:
+                    self.signal['default'].emit(data)
             except Exception as e:
                 print(e, data)
 

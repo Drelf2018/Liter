@@ -25,7 +25,7 @@ class TMessageLabel(QLabel):
         if font:
             self.font = font
         else:
-            self.font = QFont('msyh')
+            self.font = QFont('微软雅黑')
             self.font.setPixelSize(20)
         self.fm = QFontMetricsF(self.font)  # 测字符长度
         self.text = self.split()  # 分割字符
@@ -85,7 +85,7 @@ class TMessageLabel(QLabel):
                 if lastKey == -1:
                     lastKey = key
                 if 0 <= y-lastKey <= self.picHeight[lastKey][0]:
-                    PicWindow(self.picHeight[lastKey][1], parent=self).show()
+                    PicWindow(self.picHeight[lastKey][1], self).show()
 
     def mousePressEvent(self, QMouseEvent):
         QMouseEvent.accept()
@@ -111,7 +111,7 @@ class TMessageLabel(QLabel):
             if isinstance(t, str):  # 文本
                 w = self.fm.width(t)
                 h = self.fm.height()
-                text_pat.drawText(QRect(7, y, w, h), Qt.AlignCenter, t)
+                text_pat.drawText(QRect(7, y, w, h+3), Qt.AlignTop, t)
                 y += h + 3
             elif isinstance(t, tuple) and isinstance(t[0], Image.Image):  # 图片
                 im = t[0].convert('RGBA')

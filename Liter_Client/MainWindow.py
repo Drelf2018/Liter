@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import json
@@ -8,6 +7,7 @@ from .TPushButton import TPushButton
 from .RoundShadow import RoundShadow
 from .TMessage import TMessage
 from .TScrollArea import TScrollArea
+from .CmdWindow import CmdWindow
 from PyQt5.QtCore import (Qt, pyqtSignal, QThread, QEvent)
 from PyQt5.QtGui import (QColor, QFont, QKeyEvent)
 from PyQt5.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QWidget, QTextEdit)
@@ -79,7 +79,7 @@ class MainWindow(RoundShadow):
     update_signal = pyqtSignal(list)  # 更新消息的信号
 
     def __init__(self, connecter):
-        super(MainWindow, self).__init__(820, 640, 16, 8, lambda x: 20*(1-x**0.5*0.3535), QColor(0, 0, 0, 255), 0.2, None, '主页')
+        super(MainWindow, self).__init__(820, 640, title='主页')
         self.connecter = connecter  # 与服务端的连接器
         self.massageWidget = QWidget()  # 消息框
         self.topicWidget = QWidget()  # 话题框
@@ -139,11 +139,12 @@ class MainWindow(RoundShadow):
         '向话题框添加话题'
         self.topicWidget = QWidget()
         self.topicWidget.resize(205, 0)
+        # self.topicWidget.setStyleSheet(("background:rgba();"))
         theight = 75
         twheight = 0
         for topic in self.connecter.topics:
             tb = TPushButton(bid=topic['first'], tid=topic['tid'], parent=self.topicWidget)
-            tb.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), topic['name']))
+            tb.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), topic['name']))
             tb.setGeometry(0, twheight, 205, theight)
             tb.clicked.connect(self.button_clicked)
             twheight += theight
@@ -151,19 +152,12 @@ class MainWindow(RoundShadow):
         self.topicScroll.setWidget(self.topicWidget)
         self.topicScroll.verticalScrollBar().setValue(self.topicScroll.verticalScrollBar().minimum())
 
+    def cmd(self):
+        CmdWindow(self.connecter.ADDRESS).show()
+
     def initUI(self):
-        # 切换目录
-        os.chdir(os.path.dirname(__file__))
         # 设置标题
         self.setWindowTitle('MainWindow')
-        # 设置最小化按钮位置和大小 绑定事件
-        self.minButton = TPushButton(img=['img/min1.png', 'img/min2.png', 'img/min2.png'], parent=self)
-        self.minButton.setGeometry(759, 16, 26, 26)
-        self.minButton.clicked.connect(self.showMinimized)
-        # 设置关闭按钮位置和大小 绑定事件
-        self.closeButton = TPushButton(img=['img/close1.png', 'img/close2.png', 'img/close2.png'], parent=self)
-        self.closeButton.setGeometry(790, 16, 26, 26)
-        self.closeButton.clicked.connect(self.close)
         # 添加聊天框背景
         r = requests.get('http://bing.getlove.cn/latelyBingImageStory')
         bg = TLabel(img='https:'+json.loads(r.text)[1]['CDNUrl'], parent=self.bglab)
@@ -177,7 +171,7 @@ class MainWindow(RoundShadow):
         self.massageScroll.setFrameShape(QFrame.NoFrame)
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 添加编辑框
-        font = QFont('msyh')
+        font = QFont('微软雅黑')
         font.setPixelSize(19)
         self.sendLabel = TLabel((0, 16, 0, 0))
         self.sendEdit = TTextEdit(self, self.sendLabel)
@@ -189,7 +183,7 @@ class MainWindow(RoundShadow):
         self.sendEdit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         # 发送按钮
         self.sendButton = TPushButton(r=(8, 8, 8, 8), color=[QColor(217, 135, 89), QColor(225, 163, 126), QColor(217, 135, 89)], parent=self.sendLabel)
-        self.sendButton.setTitle((Qt.white, QFont('msyh', 11, QFont.Bold), '发送'))
+        self.sendButton.setTitle((Qt.white, QFont('微软雅黑', 11, QFont.Bold), '发送'))
         self.sendButton.clicked.connect(self.sendTo)
         self.sendButton.setGeometry(525, 125, 80, 35)
         # 添加布局并设置布局中组件间距
@@ -204,23 +198,28 @@ class MainWindow(RoundShadow):
         self.topicScroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.topicScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.topicScroll.setFrameShape(QFrame.NoFrame)
-        self.topicWidget.resize(205, 55)
+        self.topicScroll.setStyleSheet(("border:0px;background:rgba(187,222,255,255);"))
         # 主页
-        self.homeLabel = TLabel(text=(Qt.black, QFont('msyh', 50, QFont.Bold), '主页'), parent=self)
-        self.homeLabel.setGeometry(self.s, self.s+40, self.bglab.width()*3/(3+1), self.bglab.height()*23/(23+9))
+        self.homeLabel = TLabel(text=(Qt.black, QFont('微软雅黑', 50, QFont.Bold), '主页'), parent=self)
+        self.homeLabel.setGeometry(self.s, self.s+40, self.bglab.width()*3/(3+1)-2, self.bglab.height()*23/(23+9)-1)
         # 主页按钮
         self.homeButton = TPushButton()
-        self.homeButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '主页'))
+        self.homeButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '主页'))
         self.homeButton.clicked.connect(self.button_clicked)
         self.homeButton.setMinimumSize(205, 45)
         # 记录被选中的按钮
         self.selectButton = self.homeButton
         # 添加"更多"按钮
         self.moreButton = TPushButton(r=(0, 0, 16, 0))
-        self.moreButton.setTitle((Qt.black, QFont('msyh', 11, QFont.Bold), '更多'))
+        self.moreButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '命令行'))
+        self.moreButton.clicked.connect(self.cmd)
         self.moreButton.setMinimumSize(205, 45)
         # 将消息框与编辑框垂直布局
         self.showBox.addWidget(self.massageScroll, 23)
+        # 分割条
+        splitLab = TLabel(color=QColor(242, 242, 242))
+        splitLab.setMaximumHeight(2)
+        self.showBox.addWidget(splitLab)
         self.showBox.addWidget(self.sendLabel, 9)
         # 将话题框与按钮垂直布局
         self.topicBox.addWidget(self.homeButton)
@@ -228,6 +227,10 @@ class MainWindow(RoundShadow):
         self.topicBox.addWidget(self.moreButton)
         # 将两垂直布局水平排布
         self.hbox.addLayout(self.showBox, 3)
+        # 分割条
+        splitLab = TLabel(color=QColor(242, 242, 242))
+        splitLab.setMaximumWidth(2)
+        self.hbox.addWidget(splitLab)
         self.hbox.addLayout(self.topicBox, 1)
         # 取消布局与添加布局的组件间距
         self.hbox.setContentsMargins(0, 0, 0, 0)
