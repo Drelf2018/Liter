@@ -71,9 +71,9 @@ class LoginWindow(RoundShadow):
 
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() in [16777220, 16777221]:  # 回车
-            if self.accountEdit.hasFocus() or self.passwordEdit.hasFocus():
+            if self.account.Edit.hasFocus() or self.password.Edit.hasFocus():
                 self.connecter.login({
-                    'username': self.accountEdit.text(),
-                    'password': self.passwordEdit.text()
+                    'username': self.account.Edit.text(),
+                    'password': self.password.Edit.text()
                 })
         QKeyEvent.accept()
