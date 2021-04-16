@@ -1,11 +1,65 @@
-from PyQt5.QtCore import (Qt, QRectF)
+from PyQt5.QtCore import (Qt, QRectF, QRect)
 from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QFont)
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QPushButton
 from .TLabel import TLabel
-from .TPushButton import TPushButton
 from .TPath import RoundPath
 import numpy as np
-import os
+
+
+class MyButton(QPushButton):
+    MINI = 0
+    CLOSE = 1
+
+    def __init__(self, patten, parent=None):
+        super(MyButton, self).__init__(parent)
+        self.patten = patten
+        self.choice = 0
+        self.color = [QColor(0, 0, 0, 0), QColor(219, 236, 255), QColor(255, 84, 57) if patten else QColor(133, 194, 255)]
+
+    def enterEvent(self, QMouseEvent):
+        self.choice = 1
+
+    def mousePressEvent(self, QMouseEvent):
+        self.choice = 2
+        super(MyButton, self).mousePressEvent(QMouseEvent)
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.choice = 1
+        super(MyButton, self).mouseReleaseEvent(QMouseEvent)
+
+    def leaveEvent(self, QMouseEvent):
+        self.choice = 0
+
+    def paintEvent(self, event):
+        if self.patten == self.CLOSE:
+            pat = QPainter(self)
+            pat.setRenderHint(pat.Antialiasing)  # 抗锯齿
+            pat.setPen(Qt.NoPen)
+            pat.setBrush(self.color[self.choice])
+            pat.drawRoundedRect(QRect(0, 0, self.width(), self.height()), self.width()/2, self.height()/2)
+            x, y, r, s = self.width()/2-3, self.height()/2-3, self.width()/5, 2
+            pat.translate(x+3, y+3)
+            pat.rotate(-45)
+            pat.setPen(Qt.black)
+            pat.setBrush(Qt.black)
+            pat.drawRoundedRect(QRect(-x-s, -r/2+s, 2*x, r), r/2, r/2)
+            pat.drawRoundedRect(QRect(-r/2-s, -y+s, r, 2*y), r/2, r/2)
+            pat.setPen(Qt.white)
+            pat.setBrush(Qt.white)
+            pat.drawRoundedRect(QRect(-x, -r/2, 2*x, r), r/2, r/2)
+            pat.drawRoundedRect(QRect(-r/2, -y, r, 2*y), r/2, r/2)
+        elif self.patten == self.MINI:
+            pat = QPainter(self)
+            pat.setRenderHint(pat.Antialiasing)  # 抗锯齿
+            pat.setPen(Qt.NoPen)
+            pat.setBrush(self.color[self.choice])
+            pat.drawRoundedRect(QRect(0, 0, self.width(), self.height()), self.width()/2, self.height()/2)
+            pat.setPen(Qt.black)
+            pat.setBrush(Qt.black)
+            pat.drawRoundedRect(QRect(self.width()/5, self.height()*3/5+2, self.width()*3/5, self.height()/5), self.height()/10, self.height()/10)
+            pat.setPen(Qt.white)
+            pat.setBrush(Qt.white)
+            pat.drawRoundedRect(QRect(self.width()/5, self.height()*3/5, self.width()*3/5, self.height()/5), self.height()/10, self.height()/10)
 
 
 class RoundShadow(QWidget):
@@ -36,15 +90,14 @@ class RoundShadow(QWidget):
         # 设置窗口无边框和背景透明
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
-        # 切换目录
-        os.chdir(os.path.dirname(__file__))
         # 设置最小化按钮位置和大小 绑定事件
-        self.minButton = TPushButton(img=['img/min1.png', 'img/min2.png', 'img/min2.png'], parent=self)
-        self.minButton.setGeometry(self.width()-2*self.s-60, 16, 26, 26)
+        # self.minButton = TPushButton(img=['img/min1.png', 'img/min2.png', 'img/min2.png'], parent=self)
+        self.minButton = MyButton(MyButton.MINI, self)
+        self.minButton.setGeometry(self.width()-2*self.s-70, self.s+5, 30, 30)
         self.minButton.clicked.connect(self.showMinimized)
         # 设置关闭按钮位置和大小 绑定事件
-        self.closeButton = TPushButton(img=['img/close1.png', 'img/close2.png', 'img/close2.png'], parent=self)
-        self.closeButton.setGeometry(self.width()-2*self.s-30, 16, 26, 26)
+        self.closeButton = MyButton(MyButton.CLOSE, self)
+        self.closeButton.setGeometry(self.width()-2*self.s-35, self.s+5, 30, 30)
         self.closeButton.clicked.connect(self.close)
         # 设置圆角背景图片
         self.bglab = TLabel((0, self.r, self.r, 0), img=img, parent=self)

@@ -63,6 +63,7 @@ class LoginWindow(RoundShadow):
         loginButton.setGeometry(10, 0.31*h, 0.6*w-20, 0.118*h)
 
     def mousePressEvent(self, QMouseEvent):
+        super(LoginWindow, self).mousePressEvent(QMouseEvent)
         x, y = QMouseEvent.x(), QMouseEvent.y()
         child = self.childAt(x, y)
         if not child or not isinstance(child, TLineEdit):
