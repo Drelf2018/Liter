@@ -1,6 +1,6 @@
 from PyQt5.QtCore import (Qt, QRectF, QRect)
 from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QFont)
-from PyQt5.QtWidgets import QWidget, QPushButton
+from PyQt5.QtWidgets import QWidget, QPushButton, QDesktopWidget
 from .TLabel import TLabel
 from .TPath import RoundPath
 import numpy as np
@@ -102,6 +102,13 @@ class RoundShadow(QWidget):
         # 设置圆角背景图片
         self.bglab = TLabel((0, self.r, self.r, 0), img=img, parent=self)
         self.bglab.setGeometry(self.s, self.s+40, width, height-40)
+        self.center()
+
+    def center(self):
+        screen = QDesktopWidget().screenGeometry()
+        size = self.geometry()
+        self.move((screen.width() - size.width()) / 2,
+                  (screen.height() - size.height()) / 2)
 
     def setTitle(self, title):
         self.title = title

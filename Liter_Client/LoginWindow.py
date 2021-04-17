@@ -35,12 +35,12 @@ class LoginWindow(RoundShadow):
         self.lab = TLabel((15, 15, 15, 15), color=QColor(255, 255, 255, 155), parent=self.bglab)
         self.lab.setGeometry(0.2*w, 0.275*h, 0.6*w, 0.45*h)
         # 新建账号文本框并设置大小位置
-        self.account = TLineEdit(5, 0.025*h, 0.6*w-10, 0.118*h, self.lab)
+        self.account = TLineEdit(5, 0.025*h, 0.6*w-10, 0.118*h, TLineEdit.ACCOUNT, self.lab)
         self.account.Edit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
         self.account.Edit.setFont(QFont('微软雅黑', 14*h/380))
         self.account.Edit.setText('drelf')
         # 新建密码文本框并设置大小位置
-        self.password = TLineEdit(5, 0.17*h, 0.6*w-10, 0.118*h, self.lab)  # [QIcon('img/1.png'), QIcon('img/2.png')],
+        self.password = TLineEdit(5, 0.17*h, 0.6*w-10, 0.118*h, TLineEdit.PASSWORD, self.lab)  # [QIcon('img/1.png'), QIcon('img/2.png')],
         self.password.Edit.setPlaceholderText('密码')  # 默认文字
         self.password.Edit.setEchoMode(self.password.Edit.Password)  # 密码模式 输入字符用圆点代替
         self.password.Edit.setFont(QFont('微软雅黑', 14*h/380))

@@ -44,13 +44,14 @@ class TMessageLabel(QLabel):
                     response = requests.get(url)  # 请求图片
                     image = Image.open(BytesIO(response.content))  # 读取网络图片
                     new_height = int(image.height/image.width*self.maxWidth/2)  # 图片宽度为限宽一半
-                    self.rwidth = max(self.rwidth, self.maxWidth/2)
+                    self.rwidth = max(self.rwidth, self.maxWidth//2)
                     self.rheight += new_height + 3
-                    new_image = image.resize((self.maxWidth//2, new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
+                    new_image = image.resize((int(self.maxWidth/2), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
                     temp.append((new_image, image))
                     continue
-                except Exception:
+                except Exception as e:
                     t = '<图片错误>'
+                    print(e)
             count = 0  # 记录字符串长度
             last = 0  # 上一次分割的点位
             point = -1  # 指针
@@ -88,7 +89,8 @@ class TMessageLabel(QLabel):
                     PicWindow(self.picHeight[lastKey][1], self).show()
 
     def mousePressEvent(self, QMouseEvent):
-        QMouseEvent.accept()
+        if QMouseEvent.button() == Qt.RightButton:
+            QMouseEvent.ignore()
 
     def paintEvent(self, event):
         super(TMessageLabel, self).paintEvent(event)

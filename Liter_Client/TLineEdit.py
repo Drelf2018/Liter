@@ -33,9 +33,13 @@ class EXEdit(QLineEdit):
 
 class TLineEdit(QWidget):
     '自定义的只含底线的文本框'
-    def __init__(self, left, top, width, height, parent=None):
+    ACCOUNT = 0
+    PASSWORD = 1
+
+    def __init__(self, left, top, width, height, patten=None, parent=None):
         super(TLineEdit, self).__init__(parent)
         self.setGeometry(left, top, width, height)
+        self.patten = patten
         self.Edit = EXEdit(self)  # 编辑框
         # 利用css代码取消边框和背景
         self.Edit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
@@ -57,10 +61,21 @@ class TLineEdit(QWidget):
     def paintEvent(self, event):
         '绘制文本框'
         pat = QPainter(self)
-        pat.setPen(self.pen)
         pat.setRenderHint(pat.Antialiasing)
-        pat.drawRoundedRect(QRect(5, 5, self.height()-10, self.height()-10), self.height()-5, self.height()-5)
+        pat.setPen(self.pen)
         pat.drawLine(QPointF(0, self.height()), QPointF(self.width(), self.height()))
+        x = int(self.height()/2)
+        if self.patten == self.ACCOUNT:
+            r1, r2 = int(self.height()/8), int(self.height()*3/16)
+            h = int(self.height()-2*r1-r2)//2
+            h1, h2 = h+r1, h+2*r1+r2
+            pat.drawRoundedRect(QRect(x-r1, h1-r1, 2*r1, 2*r1), r1, r1)
+            pat.drawArc(QRect(x-r2, h2-r2, 2*r2, 2*r2), 0, 180*16)
+        elif self.patten == self.PASSWORD:
+            r = 0.1611*self.height()
+            pat.drawArc(QRect(x-r, x-1.65*r, 2*r, 2*r), 20*16, 160*16)
+            pat.drawLine(QPointF(int(x-r), int(x-0.65*r)), QPointF(int(x-r), x))
+            pat.drawRoundedRect(QRect(x-1.405*r, x, 2.811*r, 1.68*r), 0.38*r, 0.38*r)
 
     def enterEvent(self, QMouseEvent):
         '检测鼠标是否移动至文本框并变色'

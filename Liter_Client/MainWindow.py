@@ -79,7 +79,9 @@ class MainWindow(RoundShadow):
     update_signal = pyqtSignal(list)  # 更新消息的信号
 
     def __init__(self, connecter):
-        super(MainWindow, self).__init__(820, 640, title='主页')
+        self.rwidth = 820*1.5
+        self.rheight = 640*1.5
+        super(MainWindow, self).__init__(self.rwidth, self.rheight, title='主页')
         self.connecter = connecter  # 与服务端的连接器
         self.massageWidget = QWidget()  # 消息框
         self.topicWidget = QWidget()  # 话题框
@@ -123,14 +125,14 @@ class MainWindow(RoundShadow):
                 old_massages = [tm.massage for tm in self.massageWidget.children()]
             massages = old_massages + massages
             self.massageWidget = QWidget()
-            self.massageWidget.resize(615, 0)
+            self.massageWidget.resize(0.75*self.rwidth, 0)
             mwheight = 0
             for msg in massages:
                 # 新建单条消息组件
-                tm = TMessage(massage=msg, parent=self.massageWidget)
+                tm = TMessage(msg, 0.75*self.rwidth, parent=self.massageWidget)
                 tm.move(0, mwheight)
                 mwheight += tm.height()
-            self.massageWidget.setMinimumSize(615, mwheight)
+            self.massageWidget.setMinimumSize(0.75*self.rwidth, mwheight)
             self.massageScroll.setWidget(self.massageWidget)
             # 自动滚动至最下 https://tieba.baidu.com/p/3174003701?red_tag=0415728187
             self.massageScroll.verticalScrollBar().setValue(self.massageScroll.verticalScrollBar().maximum())
@@ -138,17 +140,17 @@ class MainWindow(RoundShadow):
     def initTopic(self):
         '向话题框添加话题'
         self.topicWidget = QWidget()
-        self.topicWidget.resize(205, 0)
+        self.topicWidget.resize(0.25*self.rwidth, 0)
         # self.topicWidget.setStyleSheet(("background:rgba();"))
         theight = 75
         twheight = 0
         for topic in self.connecter.topics:
             tb = TPushButton(bid=topic['first'], tid=topic['tid'], parent=self.topicWidget)
             tb.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), topic['name']))
-            tb.setGeometry(0, twheight, 205, theight)
+            tb.setGeometry(0, twheight, 0.25*self.rwidth, theight)
             tb.clicked.connect(self.button_clicked)
             twheight += theight
-        self.topicWidget.setMinimumSize(205, twheight)
+        self.topicWidget.setMinimumSize(0.25*self.rwidth, twheight)
         self.topicScroll.setWidget(self.topicWidget)
         self.topicScroll.verticalScrollBar().setValue(self.topicScroll.verticalScrollBar().minimum())
 
@@ -179,13 +181,13 @@ class MainWindow(RoundShadow):
         self.sendEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.sendEdit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))  # 取消背景
-        self.sendEdit.setGeometry(10, 10, 595, 105)  # 初始位置以及大小
+        self.sendEdit.setGeometry(10, 10, 0.75*self.rwidth-20, 0.208*(self.rheight-40)-20)  # 初始位置以及大小
         self.sendEdit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         # 发送按钮
         self.sendButton = TPushButton(r=(8, 8, 8, 8), color=[QColor(217, 135, 89), QColor(225, 163, 126), QColor(217, 135, 89)], parent=self.sendLabel)
         self.sendButton.setTitle((Qt.white, QFont('微软雅黑', 11, QFont.Bold), '发送'))
         self.sendButton.clicked.connect(self.sendTo)
-        self.sendButton.setGeometry(525, 125, 80, 35)
+        self.sendButton.setGeometry(0.6375*self.rwidth, 0.208*(self.rheight-40), 0.0975*self.rwidth, 0.0583*(self.rheight-40))
         # 添加布局并设置布局中组件间距
         self.showBox = QVBoxLayout()
         self.topicBox = QVBoxLayout()
@@ -206,14 +208,14 @@ class MainWindow(RoundShadow):
         self.homeButton = TPushButton()
         self.homeButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '主页'))
         self.homeButton.clicked.connect(self.button_clicked)
-        self.homeButton.setMinimumSize(205, 45)
+        self.homeButton.setMinimumSize(0.25*self.rwidth, 45)
         # 记录被选中的按钮
         self.selectButton = self.homeButton
         # 添加"更多"按钮
         self.moreButton = TPushButton(r=(0, 0, 16, 0))
         self.moreButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '命令行'))
         self.moreButton.clicked.connect(self.cmd)
-        self.moreButton.setMinimumSize(205, 45)
+        self.moreButton.setMinimumSize(0.25*self.rwidth, 45)
         # 将消息框与编辑框垂直布局
         self.showBox.addWidget(self.massageScroll, 23)
         # 分割条
