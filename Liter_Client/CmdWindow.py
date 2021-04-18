@@ -22,7 +22,7 @@ class CmdWindow(RoundShadow):
 
     def initUI(self):
         self.font = QFont('微软雅黑', 10)
-        self.sendEdit = TLineEdit(5, 320, 550, 45, self.bglab)
+        self.sendEdit = TLineEdit(5, 320, 550, 45, None, self.bglab)
         self.sendEdit.Edit.setFont(self.font)
         self.recvEdit = QTextEdit(self.bglab)
         self.recvEdit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

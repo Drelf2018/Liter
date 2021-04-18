@@ -108,9 +108,14 @@ class MainWindow(RoundShadow):
         '按钮按下'
         self.selectButton = self.sender()  # https://www.5axxw.com/questions/content/dpc5m4
         if self.selectButton == self.homeButton:
+            self.massageScroll.hide()
             self.homeLabel.show()  # 显示主页
+            self.setWindowTitle('主页')
+            self.setTitle('主页')
         else:
             self.homeLabel.hide()  # 隐藏主页
+            self.massageScroll.show()
+            self.setWindowTitle(self.selectButton.text[2])
             self.auto.update_msg()
 
     def change_massage(self, massages):
@@ -172,6 +177,7 @@ class MainWindow(RoundShadow):
         self.massageScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.massageScroll.setFrameShape(QFrame.NoFrame)
         self.massageScroll.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
+        self.massageScroll.hide()
         # 添加编辑框
         font = QFont('微软雅黑')
         font.setPixelSize(19)
@@ -201,22 +207,22 @@ class MainWindow(RoundShadow):
         self.topicScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.topicScroll.setFrameShape(QFrame.NoFrame)
         self.topicScroll.setStyleSheet(("border:0px;background:rgba(187,222,255,255);"))
-        # 主页
-        self.homeLabel = TLabel(text=(Qt.black, QFont('微软雅黑', 50, QFont.Bold), '主页'), parent=self)
-        self.homeLabel.setGeometry(self.s, self.s+40, self.bglab.width()*3/(3+1)-2, self.bglab.height()*23/(23+9)-1)
+        # 主页 具体内容待写
+        self.homeLabel = TLabel(text=(Qt.black, QFont('微软雅黑', 50, QFont.Bold), '主页\n具体内容待写'), parent=self)
         # 主页按钮
         self.homeButton = TPushButton()
         self.homeButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '主页'))
         self.homeButton.clicked.connect(self.button_clicked)
-        self.homeButton.setMinimumSize(0.25*self.rwidth, 45)
+        self.homeButton.setMinimumSize(0.25*self.rwidth, 50)
         # 记录被选中的按钮
         self.selectButton = self.homeButton
         # 添加"更多"按钮
         self.moreButton = TPushButton(r=(0, 0, 16, 0))
         self.moreButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '命令行'))
         self.moreButton.clicked.connect(self.cmd)
-        self.moreButton.setMinimumSize(0.25*self.rwidth, 45)
+        self.moreButton.setMinimumSize(0.25*self.rwidth, 50)
         # 将消息框与编辑框垂直布局
+        self.showBox.addWidget(self.homeLabel, 23)
         self.showBox.addWidget(self.massageScroll, 23)
         # 分割条
         splitLab = TLabel(color=QColor(242, 242, 242))

@@ -76,6 +76,13 @@ class TLineEdit(QWidget):
             pat.drawArc(QRect(x-r, x-1.65*r, 2*r, 2*r), 20*16, 160*16)
             pat.drawLine(QPointF(int(x-r), int(x-0.65*r)), QPointF(int(x-r), x))
             pat.drawRoundedRect(QRect(x-1.405*r, x, 2.811*r, 1.68*r), 0.38*r, 0.38*r)
+        else:
+            pat.drawLine(QPointF(0.75*x, x), QPointF(0.25*x, 0.5*x))
+            pat.drawLine(QPointF(0.75*x, x), QPointF(0.25*x, 1.5*x))
+            pat.drawLine(QPointF(1.25*x, x), QPointF(0.75*x, 0.5*x))
+            pat.drawLine(QPointF(1.25*x, x), QPointF(0.75*x, 1.5*x))
+            pat.drawLine(QPointF(1.75*x, x), QPointF(1.25*x, 0.5*x))
+            pat.drawLine(QPointF(1.75*x, x), QPointF(1.25*x, 1.5*x))
 
     def enterEvent(self, QMouseEvent):
         '检测鼠标是否移动至文本框并变色'
