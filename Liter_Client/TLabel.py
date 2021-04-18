@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import (QImage, QBrush, QPainter)
+from PyQt5.QtGui import (QBrush, QPainter)
 from .TPath import RoundPath
 import requests
 from PIL import Image, ImageFilter, ImageQt
@@ -46,7 +46,7 @@ class TLabel(QLabel):
         pat.setRenderHint(pat.Antialiasing)  # 抗锯齿
         # 画刷为图片 若不存在为纯色
         if self.img:
-            self.img = QImage(self.img).scaled(self.width(), self.height())
+            self.img = self.img.scaled(self.width(), self.height())
             brush.setTextureImage(self.img)
         else:
             brush = QBrush(self.color)

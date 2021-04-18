@@ -142,7 +142,7 @@ class MainWindow(RoundShadow):
         self.topicWidget = QWidget()
         self.topicWidget.resize(0.25*self.rwidth, 0)
         # self.topicWidget.setStyleSheet(("background:rgba();"))
-        theight = 75
+        theight = 0.0914*self.rwidth
         twheight = 0
         for topic in self.connecter.topics:
             tb = TPushButton(bid=topic['first'], tid=topic['tid'], parent=self.topicWidget)
