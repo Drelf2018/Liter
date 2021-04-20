@@ -56,13 +56,13 @@ class connecter(QThread):
                 data = json.loads(data)
                 self.topics = data  # 保存获取的话题
                 if 'default' in self.signal:
-                    self.signal['default'].emit('True')
+                    self.signal['default'].emit('登录成功')
                 else:
                     self.signal['/login'].emit(True)
             except Exception:
                 # 如果 json 解析失败发送False信号给登录窗口
                 if 'default' in self.signal:
-                    self.signal['default'].emit('False')
+                    self.signal['default'].emit('账户或密码错误')
                 else:
                     self.signal['/login'].emit(False)
         else:
@@ -74,6 +74,11 @@ class connecter(QThread):
                 elif 'default' in self.signal:
                     self.signal['default'].emit(data)
             except Exception as e:
+                if data == '请先登录':
+                    if 'default' in self.signal:
+                        self.signal['default'].emit(data)
+                    else:
+                        self.signal['/login'].emit(False)
                 print(e, data)
 
     def quit(self):

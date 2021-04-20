@@ -38,14 +38,14 @@ class LoginWindow(RoundShadow):
         self.account = TLineEdit(5, 0.025*h, 0.6*w-10, 0.118*h, TLineEdit.ACCOUNT, self.lab)
         self.account.Edit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字
         self.account.Edit.setFont(QFont('微软雅黑', 14*h/380))
-        self.account.Edit.setText('drelf')
+        # self.account.Edit.setText('drelf')
         # 新建密码文本框并设置大小位置
         self.password = TLineEdit(5, 0.17*h, 0.6*w-10, 0.118*h, TLineEdit.PASSWORD, self.lab)  # [QIcon('img/1.png'), QIcon('img/2.png')],
         self.password.Edit.setPlaceholderText('密码')  # 默认文字
         self.password.Edit.setEchoMode(self.password.Edit.Password)  # 密码模式 输入字符用圆点代替
         self.password.Edit.setFont(QFont('微软雅黑', 14*h/380))
         self.password.Edit.textChanged.connect(lambda: self.password.Edit.setPlaceholderText('密码'))
-        self.password.Edit.setText('drelf...')
+        # self.password.Edit.setText('drelf...')
         # 限制输入字符
         reg = QRegExp('[a-zA-Z0-9!@#%^&*()_.]+$')  # 创建一个正则表达式对象
         validator = QRegExpValidator(reg, self)  # 创建一个过滤器对象

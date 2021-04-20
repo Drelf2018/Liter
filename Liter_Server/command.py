@@ -13,10 +13,12 @@ AVAILABLE_COMMANDS = {
 }
 
 
-def analysis(cmd: str, uid=None, ip=None):
+def analysis(cmd: str, uid=None, ip=None, need=None):
     args = cmd.split(' ')
     cmd = args[0]
     para = tuple(args[1:])
+    if need and not cmd == need:
+        return 0, -1
     if cmd not in AVAILABLE_COMMANDS:
         # 命令不存在 抛出异常
         raise Exception('Wrong Command')
@@ -51,7 +53,7 @@ def analysis(cmd: str, uid=None, ip=None):
                 tid, text = para
                 mid = Massage.new(int(tid), uid, ip, text)
                 Topic.modify(tid, {'LAST': mid})
-                return '发送成功'
+                return ''
 
 
 if __name__ == '__main__':

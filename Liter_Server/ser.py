@@ -26,13 +26,16 @@ class LiterServer(object):
             while True:
                 login = client_socket.recv(self.BUFSIZ).decode('utf-8')
                 try:
-                    uid, topics = command.analysis(login)
+                    uid, topics = command.analysis(login, need='/login')
                     if uid:
                         client_socket.send(topics.encode('utf-8'))
                         user = [uid, client_address[0]]
                         break
                     else:
-                        client_socket.send('账户或密码错误'.encode('utf-8'))
+                        if topics:
+                            client_socket.send('请先登录'.encode('utf-8'))
+                        else:
+                            client_socket.send('账户或密码错误'.encode('utf-8'))
                 except Exception as e:
                     print(e)
             while True:
