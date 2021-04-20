@@ -1,9 +1,9 @@
 import socket
-from command_copy import analysis_command as ac
+import command
 import concurrent.futures as futures
 
 
-class TCPServer:
+class LiterServer(object):
     def __init__(self, host='', port=7233):
         self.HOST = host
         self.PORT = port
@@ -26,9 +26,9 @@ class TCPServer:
             while True:
                 login = client_socket.recv(self.BUFSIZ).decode('utf-8')
                 try:
-                    uid, info = ac(login, '/login')
+                    uid, topics = command.analysis(login)
                     if uid:
-                        client_socket.send(info.encode('utf-8'))
+                        client_socket.send(topics.encode('utf-8'))
                         user = [uid, client_address[0]]
                         break
                     else:
@@ -39,18 +39,18 @@ class TCPServer:
                 data = client_socket.recv(self.BUFSIZ).decode('utf-8')
                 print('接收到来自{2}的消息({1} bytes)：{0}'.format(data, len(data.encode('utf-8')), client_address))
                 try:
-                    resp = ac(data, user=user)
-                    if not resp:
-                        client_socket.send('/close'.encode('utf-8'))
+                    if data == '/close':
                         break
                     else:
+                        resp = command.analysis(data, user[0], user[1])
                         client_socket.send(resp.encode('utf-8'))
                 except Exception as e:
                     client_socket.send(str(e).encode('utf-8'))
         finally:
             client_socket.close()
-            print("已主动断开客户端{}！".format(client_address))
+            print("已断开客户端{}！".format(client_address))
 
 
-ts = TCPServer()
-ts.launch()
+if __name__ == '__main__':
+    ls = LiterServer()
+    ls.launch()

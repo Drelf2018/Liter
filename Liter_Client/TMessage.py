@@ -14,7 +14,7 @@ class TMessage(QLabel):
         super(TMessage, self).__init__(parent)
         self.text = massage['text'].replace('<sp/>', ' ')  # 空格替换
         self.text = self.text.split('<br/>')  # 裁剪出消息
-        self.identity = massage['from']  # 发消息人的身份
+        self.identity = massage['name']  # 发消息人的身份
         self.time_ip = [False, '{} {}'.format(massage['time'], massage['ip'])]
         self.massage = massage  # 保存整条消息备用
         self.rwidth = rwidth

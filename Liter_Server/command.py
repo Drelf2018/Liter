@@ -1,32 +1,58 @@
 import json
-import user_manager as um
-import massage_manager as mm
+import User
+import Topic
+import Massage
 
 
 AVAILABLE_COMMANDS = {
-    '/login': [2, um.check],
-    '/update': [1, mm.get_msg_line],
-    '/close': [0, lambda: False]
+    '/login': 2,
+    '/new_topic': 1,
+    '/update': 1,
+    '/sendto': 2,
+    '/close': 0
 }
 
 
-def analysis_command(cmd: str, need=None):
+def analysis(cmd: str, uid=None, ip=None):
     args = cmd.split(' ')
-    if need and not args[0] == need:
-        return False
-    cmd = AVAILABLE_COMMANDS.get(args[0], [-1, None])
+    cmd = args[0]
     para = tuple(args[1:])
-    if cmd[0] == -1:
+    if cmd not in AVAILABLE_COMMANDS:
+        # 命令不存在 抛出异常
         raise Exception('Wrong Command')
     else:
-        if cmd[0] == len(para):
-            resp = cmd[1](*para)
-            if args[0] == '/update':
-                for i in range(len(resp)):
-                    uid = resp[i]['from']
-                    auth, nick = um.users['uid'][uid]['authority'], um.users['uid'][uid]['nickname']
-                    resp[i]['from'] = '[{}]{}'.format(auth, nick)
-                resp = str(json.dumps(resp, ensure_ascii=False))
-            return resp
-        else:
+        if not len(para) == AVAILABLE_COMMANDS.get(cmd):
+            # 参数个数不对 抛出异常
             raise Exception('Wrong Parameter')
+        else:
+            if cmd == '/login':  # 登录
+                uid, topics = User.login(*para)
+                if uid:
+                    topics = Topic.get(topics)
+                    topics = json.dumps(topics, ensure_ascii=False)
+                return uid, topics
+            elif cmd == '/new_topic':
+                mid = Massage.new(None, 0, '127.0.0.1', '话题由用户 {} 建立'.format(uid))
+                tid = Topic.new(uid, mid, para[0])
+                Massage.modify(mid, {'TID': tid})
+                User.modifyTopic(uid, tid)
+                resp = Topic.get(tid)
+                resp = json.dumps(resp, ensure_ascii=False)
+                return resp
+            elif cmd == '/update':
+                resp = Massage.get(str(para[0]))
+                for i in range(len(resp)):
+                    auth, nick = User.get(resp[i]['uid'], 'AUTHORITY,NICKNAME')
+                    resp[i]['name'] = '[{}]{}'.format(auth, nick)
+                    resp[i]['from_me'] = 1 if uid == resp[i]['uid'] else 0
+                resp = json.dumps(resp, ensure_ascii=False)
+                return resp
+            elif cmd == '/sendto':
+                tid, text = para
+                mid = Massage.new(int(tid), uid, ip, text)
+                Topic.modify(tid, {'LAST': mid})
+                return '发送成功'
+
+
+if __name__ == '__main__':
+    analysis('/login drelf drelf...')
