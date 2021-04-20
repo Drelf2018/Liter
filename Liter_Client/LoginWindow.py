@@ -15,8 +15,8 @@ class LoginWindow(RoundShadow):
         if x:
             self.close()
         else:
-            self.passwordEdit.clear()
-            self.passwordEdit.setPlaceholderText('账号或密码错误')
+            self.password.Edit.clear()
+            self.password.Edit.setPlaceholderText('账号或密码错误')
 
     def __init__(self, connecter, pic='http://bing.getlove.cn/latelyBingImageStory'):  # img\\bg.jpg
         r = requests.get(pic)
