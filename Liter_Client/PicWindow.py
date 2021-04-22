@@ -1,8 +1,9 @@
-from PyQt5.QtCore import (Qt, QRectF, QRect)
-from PyQt5.QtGui import (QPainter, QPainterPath, QColor, QBrush)
-from PyQt5.QtWidgets import QWidget
-import numpy as np
+from PyQt5.QtCore import Qt, QRect, QPointF
+from PyQt5.QtGui import QPainter, QColor, QBrush, QWheelEvent
+from PyQt5.QtWidgets import QWidget, QDesktopWidget
+from math import sqrt
 from PIL import ImageQt
+import time
 
 
 class PicWindow(QWidget):
@@ -22,63 +23,76 @@ class PicWindow(QWidget):
         alpha = im.split()[3]
         bgmask = alpha.point(lambda x: 255-x)
         im.paste((255, 255, 255), None, bgmask)
+        self.ori_img = ImageQt.ImageQt(im)
         self.img = ImageQt.ImageQt(im)
+        self.k = img.width/img.height
         self.alpha = alpha
         self.color = QColor(0, 0, 0, 255)
         # m_drag 用于判断是否可以移动窗口
         self.m_drag = False
         self.m_DragPosition = None
-        # 扩散 圆角
-        self.s = 8
+        # 圆角
         self.r = 5
+        # 中心位置
+        self.cpos = None
+        # 时间戳
+        self.tpos = []
+        # 按住Ctrl 用滚轮缩放窗口
+        self.m_scale = False
         # 设置窗口大小为界面大小加上两倍阴影扩散距离
-        self.resize(img.width+2*self.s, img.height+2*self.s)
+        self.resize(img.width, img.height)
         # 设置窗口无边框和背景透明
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+        self.center()
+
+    def center(self):
+        dw, dh = QDesktopWidget().geometry().width(), QDesktopWidget().geometry().height()
+        iw, ih = self.ori_img.width(), self.ori_img.height()
+        k1 = sqrt(0.75*dw*dh/iw/ih)
+        k2 = 0.86*dw/iw
+        k3 = 0.86*dh/ih
+        k = min(k1, k2, k3)
+        self.img = self.ori_img.scaled(iw*k, ih*k, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.resize(int(self.img.width()), int(self.img.height()))
+        # 记录窗口中心
+        # 获得窗口
+        qr = self.frameGeometry()
+        # 获得屏幕中心点
+        cp = QDesktopWidget().availableGeometry().center()
+        # 显示到屏幕中心
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+        self.cpos = self.pos()+QPointF(self.width()/2, self.height()/2)
 
     def paintEvent(self, event):
-        # 画阴影
-        shadow_pat = QPainter(self)
-        shadow_pat.setRenderHint(shadow_pat.Antialiasing)
-
-        for i in np.arange(0, self.s+0.2, 0.2):
-            '''
-            i 表示距离界面的距离\n
-            扩散距离为 s 因此 i 的取值从[0-s]
-            每次生成一个可见度不同的圆角矩形
-            随着 i 的增大 alpha 函数值下降可使阴影渐变
-            '''
-            shadow_path = QPainterPath()
-            shadow_path.setFillRule(Qt.WindingFill)
-            ref = QRectF(self.s-i, self.s-i, self.width()-(self.s-i)*2, self.height()-(self.s-i)*2)
-            shadow_path.addRoundedRect(ref, self.r, self.r)
-            self.color.setAlpha(20*(1-i**0.5*0.3535))
-            shadow_pat.setPen(self.color)
-            shadow_pat.drawPath(shadow_path)
-
+        self.resize(self.img.width(), self.img.height())
+        self.move(self.cpos.x()-self.width()/2, self.cpos.y()-self.height()/2)
+        # 画图片
+        pic_pat = QPainter(self)
+        pic_pat.setRenderHint(pic_pat.Antialiasing)
         brush = QBrush()
         brush.setTextureImage(self.img)
-        shadow_pat.save()
-        shadow_pat.translate(self.s, self.s)  # 移动画笔 https://tieba.baidu.com/p/3769108658
-        shadow_pat.setPen(Qt.NoPen)
-        shadow_pat.setBrush(brush)
-        shadow_pat.drawRoundedRect(QRect(0, 0, self.width()-2*self.s, self.height()-2*self.s), self.r, self.r)
-        shadow_pat.restore()
+        pic_pat.setPen(Qt.gray)
+        pic_pat.setBrush(brush)
+        pic_pat.drawRoundedRect(QRect(0, 0, self.width(), self.height()), self.r, self.r)
+        pic_pat.end()
 
     def mousePressEvent(self, QMouseEvent):
-        '鼠标点击 检测点击位置判断是否可移动\n清除所有文本框的选中状态'
+        '鼠标点击 检测点击位置判断是否可移动'
         if QMouseEvent.button() == Qt.LeftButton:
             # 鼠标点击点的相对位置
             self.m_DragPosition = QMouseEvent.globalPos()-self.pos()
-            if self.s < self.m_DragPosition.y() < self.height() - self.s:
+            if 0 < self.m_DragPosition.y() < self.height():
                 self.m_drag = True
 
     def mouseMoveEvent(self, QMouseEvent):
-        '按住标题栏可移动窗口'
-        if self.m_drag:
-            self.move(QMouseEvent.globalPos()-self.m_DragPosition)
-            QMouseEvent.accept()
+        '按住左键可移动窗口'
+        if QMouseEvent.buttons() == Qt.LeftButton:
+            if self.m_drag:
+                self.move(QMouseEvent.globalPos()-self.m_DragPosition)
+                self.cpos = self.pos()+QPointF(self.width()/2, self.height()/2)
+                QMouseEvent.accept()
 
     def mouseReleaseEvent(self, QMouseEvent):
         self.m_drag = False
@@ -91,3 +105,22 @@ class PicWindow(QWidget):
     def mouseDoubleClickEvent(self, QMouseEvent):
         if QMouseEvent.buttons() == Qt.LeftButton:
             self.close()
+
+    def wheelEvent(self, e: QWheelEvent):
+        if not self.tpos:
+            self.tpos.append(time.time())
+        else:
+            t = time.time()
+            if t-self.tpos[-1] > 0.5:
+                self.tpos.append(t)
+            else:
+                return
+        para = e.angleDelta().y()/1200+1
+        w = self.width()*para
+        h = w/self.k
+        if w < 100 or h < 100:
+            self.tpos.pop(0)
+            return
+        self.img = self.ori_img.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.repaint()
+        self.tpos.pop(0)

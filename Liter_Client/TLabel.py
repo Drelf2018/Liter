@@ -24,7 +24,7 @@ class TLabel(QLabel):
         if isinstance(img, str):
             response = requests.get(img)
             image = Image.open(BytesIO(response.content))  # 读取网络图片 https://blog.csdn.net/zwyact/article/details/100133350
-            image = image.filter(ImageFilter.GaussianBlur(radius=5))  # 高斯模糊 https://blog.csdn.net/yanshuai_tek/article/details/80653064
+            image = image.filter(ImageFilter.GaussianBlur(radius=1))  # 高斯模糊 https://blog.csdn.net/yanshuai_tek/article/details/80653064
             # 透明图片需要加白色底 https://www.cnblogs.com/RChen/archive/2007/03/31/pil_thumb.html
             image = image.convert('RGBA')
             alpha = image.split()[3]

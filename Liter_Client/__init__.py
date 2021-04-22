@@ -1,5 +1,4 @@
 import sys
-import time
 from .send_receive import connecter
 from .LoginWindow import LoginWindow
 from .MainWindow import MainWindow
@@ -16,7 +15,6 @@ class Client(object):
         LoginWindow(self.ct).show()  # 显示登录窗口
         self.app.exec_()  # 等待直到登录窗口关闭
         if self.ct.topics:  # 检测是人为关闭还是登录成功 若登录成功 连接器会获取用户关注的话题
-            time.sleep(0.15)  # 我也不知道为啥等待 0.15s 这样不会出现闪屏(笑
             MainWindow(self.ct).show()  # 显示主窗口
             self.app.exec_()  # 等待主窗口关闭
         self.ct.quit()  # 断开连接器

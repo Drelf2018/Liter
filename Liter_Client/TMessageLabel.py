@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QLabel)
-from PyQt5.QtCore import (Qt, QRect)
+from PyQt5.QtCore import (Qt, QRect, QThread)
 from PyQt5.QtGui import (QPen, QColor, QFont, QBrush, QPainter, QFontMetricsF)
 from .PicWindow import PicWindow
 from PIL import Image, ImageQt
@@ -39,15 +39,30 @@ class TMessageLabel(QLabel):
         for t in self.text:
             img = re.search(patten, t)
             if img:
-                url = t[10:-3]  # 图片网址
                 try:
-                    response = requests.get(url)  # 请求图片
-                    image = Image.open(BytesIO(response.content))  # 读取网络图片
-                    new_height = int(image.height/image.width*self.maxWidth/2)  # 图片宽度为限宽一半
-                    self.rwidth = max(self.rwidth, self.maxWidth//2)
-                    self.rheight += new_height + 3
-                    new_image = image.resize((int(self.maxWidth/2), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
-                    temp.append((new_image, image))
+                    td = False
+                    url = t[10:-3]
+                    at = url.split('@')
+                    if len(at) > 1:
+                        dot = at[-1].split('.')
+                        if len(dot) == 2:
+                            x = dot[0].split('x')
+                            if len(x) == 2:
+                                w, h = int(x[0]), int(x[1])
+                                new_height = int(h/w*self.maxWidth/2)  # 图片宽度为限宽一半
+                                self.rwidth = max(self.rwidth, self.maxWidth//2)
+                                self.rheight += new_height + 3
+                                TDownload(self, len(temp), url).start()
+                                temp.append(len(temp))
+                                td = True
+                    if not td:
+                        response = requests.get(url)  # 请求图片
+                        image = Image.open(BytesIO(response.content))  # 读取网络图片
+                        new_height = int(image.height/image.width*self.maxWidth*2/3)  # 图片宽度为限宽一半
+                        self.rwidth = max(self.rwidth, int(self.maxWidth*2/3))
+                        self.rheight += new_height + 3
+                        new_image = image.resize((int(self.maxWidth*2/3), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
+                        temp.append((new_image, image))
                     continue
                 except Exception as e:
                     t = '<图片错误>'
@@ -135,3 +150,10 @@ class TMessageLabel(QLabel):
                 pass
         bubble_pat.end()
         text_pat.end()
+
+
+class TDownload(QThread):
+    def __init__(self, tml: TMessageLabel, pos: int, url: str):
+        super(TDownload, self).__init__()
+        self.pos = pos
+        self.url = url

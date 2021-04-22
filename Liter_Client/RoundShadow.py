@@ -3,7 +3,6 @@ from PyQt5.QtGui import (QPainter, QColor, QPainterPath, QFont)
 from PyQt5.QtWidgets import QWidget, QPushButton, QDesktopWidget
 from .TLabel import TLabel
 from .TPath import RoundPath
-import numpy as np
 
 
 class MyButton(QPushButton):
@@ -118,12 +117,12 @@ class RoundShadow(QWidget):
         # 画阴影
         shadow_pat = QPainter(self)
         shadow_pat.setRenderHint(shadow_pat.Antialiasing)
-
-        for i in np.arange(0, self.s+self.space, self.space):
+        i = 0
+        while i <= self.s:
             '''
             i 表示距离界面的距离\n
-            扩散距离为 s 因此 i 的取值从[0-s]
-            每次生成一个可见度不同的圆角矩形
+            扩散距离为 s 因此 i 的取值从[0-s]\n
+            每次生成一个可见度不同的圆角矩形\n
             随着 i 的增大 alpha 函数值下降可使阴影渐变
             '''
             shadow_path = QPainterPath()
@@ -133,6 +132,7 @@ class RoundShadow(QWidget):
             self.color.setAlpha(self.alpha(i))
             shadow_pat.setPen(self.color)
             shadow_pat.drawPath(shadow_path)
+            i += self.space
         # 画圆角标题栏
         round_pat = QPainter(self)
         round_pat.setRenderHint(round_pat.Antialiasing)  # 抗锯齿

@@ -79,9 +79,9 @@ class MainWindow(RoundShadow):
     update_signal = pyqtSignal(list)  # 更新消息的信号
 
     def __init__(self, connecter):
-        self.rwidth = 820*1.5
-        self.rheight = 640*1.5
-        super(MainWindow, self).__init__(self.rwidth, self.rheight, title='主页')
+        self.rwidth = 820*1.2
+        self.rheight = 640*1.2
+        super(MainWindow, self).__init__(self.rwidth, self.rheight, title='必应每日图片')
         self.connecter = connecter  # 与服务端的连接器
         self.massageWidget = QWidget()  # 消息框
         self.topicWidget = QWidget()  # 话题框
@@ -111,7 +111,7 @@ class MainWindow(RoundShadow):
             self.massageScroll.hide()
             self.homeLabel.show()  # 显示主页
             self.setWindowTitle('主页')
-            self.setTitle('主页')
+            self.setTitle('必应每日图片')
         else:
             self.homeLabel.hide()  # 隐藏主页
             self.massageScroll.show()
@@ -147,7 +147,7 @@ class MainWindow(RoundShadow):
         self.topicWidget = QWidget()
         self.topicWidget.resize(0.25*self.rwidth, 0)
         # self.topicWidget.setStyleSheet(("background:rgba();"))
-        theight = 0.0914*self.rwidth
+        theight = int(0.0914*self.rwidth)
         twheight = 0
         for topic in self.connecter.topics:
             tb = TPushButton(bid=topic['first'], tid=topic['tid'], parent=self.topicWidget)
@@ -208,7 +208,7 @@ class MainWindow(RoundShadow):
         self.topicScroll.setFrameShape(QFrame.NoFrame)
         self.topicScroll.setStyleSheet(("border:0px;background:rgba(187,222,255,255);"))
         # 主页 具体内容待写
-        self.homeLabel = TLabel(text=(Qt.black, QFont('微软雅黑', 50, QFont.Bold), '主页\n具体内容待写'), parent=self)
+        self.homeLabel = TLabel(img='https:'+json.loads(r.text)[1]['CDNUrl'], parent=self)
         # 主页按钮
         self.homeButton = TPushButton()
         self.homeButton.setTitle((Qt.black, QFont('微软雅黑', 11, QFont.Bold), '主页'))
@@ -225,7 +225,7 @@ class MainWindow(RoundShadow):
         self.showBox.addWidget(self.homeLabel, 23)
         self.showBox.addWidget(self.massageScroll, 23)
         # 分割条
-        splitLab = TLabel(color=QColor(242, 242, 242))
+        splitLab = TLabel(color=QColor(235, 235, 235))
         splitLab.setMaximumHeight(2)
         self.showBox.addWidget(splitLab)
         self.showBox.addWidget(self.sendLabel, 9)
@@ -236,7 +236,7 @@ class MainWindow(RoundShadow):
         # 将两垂直布局水平排布
         self.hbox.addLayout(self.showBox, 3)
         # 分割条
-        splitLab = TLabel(color=QColor(242, 242, 242))
+        splitLab = TLabel(color=QColor(235, 235, 235))
         splitLab.setMaximumWidth(2)
         self.hbox.addWidget(splitLab)
         self.hbox.addLayout(self.topicBox, 1)
