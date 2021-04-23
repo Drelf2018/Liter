@@ -19,6 +19,8 @@ class TScrollArea(QScrollArea):
             self.smoothMode = SmoothMode(SmoothMode.NO_SMOOTH)
             return
         self.fps = 60
+        self.firstMid = 0
+        self.lastMid = 0
         self.duration = 200
         self.stepsTotal = 0
         self.stepRatio = 1.5

@@ -19,14 +19,9 @@ class PicWindow(QWidget):
     '''
     def __init__(self, img, parent=None):
         super(PicWindow, self).__init__(parent)
-        im = img.convert('RGBA')
-        alpha = im.split()[3]
-        bgmask = alpha.point(lambda x: 255-x)
-        im.paste((255, 255, 255), None, bgmask)
-        self.ori_img = ImageQt.ImageQt(im)
-        self.img = ImageQt.ImageQt(im)
+        self.ori_img = ImageQt.ImageQt(img)
+        self.img = ImageQt.ImageQt(img)
         self.k = img.width/img.height
-        self.alpha = alpha
         self.color = QColor(0, 0, 0, 255)
         # m_drag 用于判断是否可以移动窗口
         self.m_drag = False

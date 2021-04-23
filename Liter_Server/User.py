@@ -32,7 +32,6 @@ def modifyTopic(uid: int, tid: int):
 
 
 def login(uid: str, pwd: str):
-    print(uid, pwd)
     if '@' in uid:  # 邮箱
         cursor = c.execute('SELECT UID, PASSWORD, TOPIC from USER where MAIL="{}"'.format(uid))
     elif all_number(uid):  # 账号

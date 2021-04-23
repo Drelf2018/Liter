@@ -37,21 +37,20 @@ class autoUpdate(QThread):
     def update_msg(self):
         button = self.mw.selectButton
         if not button == self.mw.homeButton:
-            first = button.bid
-            child = self.mw.massageWidget.children()  # 获取原有消息 可能为空
+            first = button.bid  # 话题的第一条消息 id
             self.mw.setTitle(button.text[2])  # 改标题
-            if child and child[0].massage['mid'] == first:
+            if self.mw.massageScroll.firstMid == first:
                 # 消息不为空且需要更新的话题是当前话题
-                self.mw.remake = True
-                self.mw.connecter.send('/update {}'.format(child[-1].massage['mid']))
-            else:
                 self.mw.remake = False
+                self.mw.connecter.send('/update {}'.format(self.mw.massageScroll.lastMid))
+            else:
+                self.mw.remake = True
                 self.mw.connecter.send('/update {}'.format(first))
 
     def run(self):
         while True:
             self.update_msg()
-            time.sleep(5)  # 太快服务器反应不过来
+            time.sleep(1)  # 太快服务器反应不过来
 
 
 class TTextEdit(QTextEdit):
@@ -120,18 +119,23 @@ class MainWindow(RoundShadow):
 
     def change_massage(self, massages):
         '修改消息框内容'
-        old_massages = []
         if massages:
-            if self.remake:
+            if not self.remake:
                 if len(massages) == 1:
                     return
                 else:
                     massages = massages[1:]
-                old_massages = [tm.massage for tm in self.massageWidget.children()]
-            massages = old_massages + massages
-            self.massageWidget = QWidget()
-            self.massageWidget.resize(0.75*self.rwidth, 0)
-            mwheight = 0
+                    temp = QWidget()
+                    temp.resize(0.75*self.rwidth, self.massageWidget.height())
+                    for tm in self.massageWidget.children():
+                        tm.setParent(temp)
+                    self.massageWidget = temp
+            else:
+                self.massageWidget = QWidget()
+                self.massageWidget.resize(0.75*self.rwidth, 0)
+                self.massageScroll.firstMid = massages[0]['mid']
+            self.massageScroll.lastMid = massages[-1]['mid']
+            mwheight = self.massageWidget.height()
             for msg in massages:
                 # 新建单条消息组件
                 tm = TMessage(msg, 0.75*self.rwidth, parent=self.massageWidget)

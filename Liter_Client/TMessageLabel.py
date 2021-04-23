@@ -6,6 +6,7 @@ from PIL import Image, ImageQt
 from io import BytesIO
 import requests
 import re
+import time
 
 
 class TMessageLabel(QLabel):
@@ -21,14 +22,18 @@ class TMessageLabel(QLabel):
         self.maxWidth = maxWidth
         self.rwidth = 0
         self.rheight = 0
+        self.finish = 0
         self.picHeight = {}
         if font:
             self.font = font
         else:
             self.font = QFont('微软雅黑')
             self.font.setPixelSize(20)
+        self.td = TDownload(self)
+        self.td.start()
         self.fm = QFontMetricsF(self.font)  # 测字符长度
         self.text = self.split()  # 分割字符
+        self.td.finish = self.finish
         self.resize(self.rwidth+14, self.rheight+11+16)
 
     def split(self):
@@ -49,10 +54,11 @@ class TMessageLabel(QLabel):
                             x = dot[0].split('x')
                             if len(x) == 2:
                                 w, h = int(x[0]), int(x[1])
-                                new_height = int(h/w*self.maxWidth/2)  # 图片宽度为限宽一半
-                                self.rwidth = max(self.rwidth, self.maxWidth//2)
+                                new_height = int(h/w*self.maxWidth*2/3)  # 图片宽度为限宽 2/3
+                                self.rwidth = max(self.rwidth, self.maxWidth*2/3)
                                 self.rheight += new_height + 3
-                                TDownload(self, len(temp), url).start()
+                                self.finish += 1
+                                self.td.append(url.replace('@{}x{}'.format(w, h), ''), len(temp))
                                 temp.append(len(temp))
                                 td = True
                     if not td:
@@ -61,6 +67,10 @@ class TMessageLabel(QLabel):
                         new_height = int(image.height/image.width*self.maxWidth*2/3)  # 图片宽度为限宽一半
                         self.rwidth = max(self.rwidth, int(self.maxWidth*2/3))
                         self.rheight += new_height + 3
+                        image = image.convert('RGBA')
+                        alpha = image.split()[3]
+                        bgmask = alpha.point(lambda x: 255-x)
+                        image.paste((255, 255, 255), None, bgmask)
                         new_image = image.resize((int(self.maxWidth*2/3), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
                         temp.append((new_image, image))
                     continue
@@ -93,15 +103,16 @@ class TMessageLabel(QLabel):
             y = QMouseEvent.pos().y()
             lastKey = -1
             if 0 <= x <= self.maxWidth//2:
-                for key in self.picHeight:
-                    if y < key:
-                        break
-                    else:
+                if self.picHeight:
+                    for key in self.picHeight:
+                        if y < key:
+                            break
+                        else:
+                            lastKey = key
+                    if lastKey == -1:
                         lastKey = key
-                if lastKey == -1:
-                    lastKey = key
-                if 0 <= y-lastKey <= self.picHeight[lastKey][0]:
-                    PicWindow(self.picHeight[lastKey][1], self).show()
+                    if 0 <= y-lastKey <= self.picHeight[lastKey][0]:
+                        PicWindow(self.picHeight[lastKey][1], self).show()
 
     def mousePressEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.RightButton:
@@ -115,7 +126,9 @@ class TMessageLabel(QLabel):
         bubble_pat.setPen(QPen(QColor(205, 156, 177), 2))
         bubble_pat.setBrush(QColor(238, 252, 255))
         bubble_pat.setRenderHint(bubble_pat.Antialiasing)
-        if not(len(self.text) == 1 and isinstance(self.text[0], tuple) and isinstance(self.text[0][0], Image.Image)):
+        if len(self.text) == 1 and isinstance(self.text[0], (tuple, int)):
+            pass
+        else:
             bubble_pat.drawRoundedRect(bb, 10, 10)
         # 画正文与图片
         y = 7+8  # 指示画笔垂直绘画位置
@@ -131,29 +144,66 @@ class TMessageLabel(QLabel):
                 text_pat.drawText(QRect(7, y, w, h+3), Qt.AlignTop, t)
                 y += h + 3
             elif isinstance(t, tuple) and isinstance(t[0], Image.Image):  # 图片
-                im = t[0].convert('RGBA')
-                alpha = im.split()[3]
-                bgmask = alpha.point(lambda x: 255-x)
-                im.paste((255, 255, 255), None, bgmask)
-                pic = ImageQt.ImageQt(im)
+                pic = ImageQt.ImageQt(t[0])
                 brush.setTextureImage(pic)
                 text_pat.save()
                 text_pat.translate(7, y)  # 移动画笔 https://tieba.baidu.com/p/3769108658
                 text_pat.setPen(Qt.NoPen)
                 text_pat.setBrush(brush)
-                text_pat.drawRoundedRect(QRect(0, 0, im.width, im.height), 10, 10)
+                text_pat.drawRoundedRect(QRect(0, 0, pic.width(), pic.height()), 10, 10)
                 text_pat.restore()
                 if not self.picHeight.get(y):
-                    self.picHeight[y] = (im.height, t[1])
-                y += im.height + 3
+                    self.picHeight[y] = (pic.height(), t[1])
+                y += pic.height() + 3
+            elif isinstance(t, int):
+                images = self.td.pic.get(t, None)
+                if images:
+                    new_image, image = images
+                    pic = ImageQt.ImageQt(new_image)
+                    brush.setTextureImage(pic)
+                    text_pat.save()
+                    text_pat.translate(7, y)  # 移动画笔 https://tieba.baidu.com/p/3769108658
+                    text_pat.setPen(Qt.NoPen)
+                    text_pat.setBrush(brush)
+                    text_pat.drawRoundedRect(QRect(0, 0, pic.width(), pic.height()), 10, 10)
+                    text_pat.restore()
+                    if not self.picHeight.get(y):
+                        self.picHeight[y] = (pic.height(), image)
             else:
                 pass
-        bubble_pat.end()
-        text_pat.end()
 
 
 class TDownload(QThread):
-    def __init__(self, tml: TMessageLabel, pos: int, url: str):
+    def __init__(self, tml: TMessageLabel):
         super(TDownload, self).__init__()
-        self.pos = pos
-        self.url = url
+        self.tml = tml
+        self.pic = {}
+        self.url = []
+        self.count = 0
+        self.finish = -1
+
+    def append(self, url, pos):
+        self.url.append((url, pos))
+
+    def run(self):
+        while True:
+            if not self.finish == -1:
+                if self.finish == self.count:
+                    break
+            while len(self.url):
+                try:
+                    url, pos = self.url.pop(0)
+                    response = requests.get(url)  # 请求图片
+                    image = Image.open(BytesIO(response.content))  # 读取网络图片
+                    image = image.convert('RGBA')
+                    alpha = image.split()[3]
+                    bgmask = alpha.point(lambda x: 255-x)
+                    image.paste((255, 255, 255), None, bgmask)
+                    new_height = int(image.height/image.width*self.tml.maxWidth*2/3)  # 图片宽度为限宽 2/3
+                    new_image = image.resize((int(self.tml.maxWidth*2/3), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
+                    self.pic[pos] = (new_image, image)
+                    self.count += 1
+                    self.tml.update()
+                except Exception:
+                    pass
+            time.sleep(0.5)
