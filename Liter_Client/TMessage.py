@@ -2,10 +2,7 @@ from PyQt5.QtWidgets import (QLabel)
 from PyQt5.QtCore import (Qt, QRect)
 from PyQt5.QtGui import (QPainter, QFont, QFontMetricsF, QBrush)
 from .TMessageLabel import TMessageLabel
-from PIL import Image, ImageQt
-from io import BytesIO
-from .PicBase64 import icon
-import base64
+from .PicBase64 import get
 
 
 class TMessage(QLabel):
@@ -28,14 +25,8 @@ class TMessage(QLabel):
         else:
             self.TMlab.move(70, 25)
         self.resize(self.rwidth, self.TMlab.height()+40)  # 放入文字后调整组件大小
-        image = BytesIO(base64.b64decode(icon))
-        image = Image.open(image)
-        image = image.convert('RGBA')
-        alpha = image.split()[3]
-        bgmask = alpha.point(lambda x: 255-x)
-        image.paste((255, 255, 255), None, bgmask)
-        image = image.resize((50, 50), Image.ANTIALIAS)
-        self.im = ImageQt.ImageQt(image)
+        image = get('icon')
+        self.im = image.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
     def mousePressEvent(self, QMouseEvent):
         '显示/隐藏隐私'

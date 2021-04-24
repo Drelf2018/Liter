@@ -1,5 +1,4 @@
-import json
-import requests
+from .PicBase64 import get
 from .TLabel import TLabel
 from .TLineEdit import TLineEdit
 from .TPushButton import TPushButton
@@ -19,9 +18,8 @@ class LoginWindow(RoundShadow):
             self.password.Edit.setPlaceholderText('账号或密码错误')
 
     def __init__(self, connecter, pic='http://bing.getlove.cn/latelyBingImageStory'):  # img\\bg.jpg
-        r = requests.get(pic)
-        pic = 'https:'+json.loads(r.text)[0]['CDNUrl']
-        super(LoginWindow, self).__init__(540, 420, img=pic)
+        k = 1.1
+        super(LoginWindow, self).__init__(540*k, (420-40)*k+40, img=get('yln'))
         self.connecter = connecter  # 与服务端的连接器
         self.close_signal.connect(self.check_login)  # 连接槽函数
         self.connecter.setSignal('/login', self.close_signal)  # 将信号告诉连接器
@@ -32,8 +30,8 @@ class LoginWindow(RoundShadow):
         self.setWindowTitle('LoginWindow')
         w, h = self.bglab.width(), self.bglab.height()  # 背景长款 540 380
         # 新建展示框用于放置文本框与按钮
-        self.lab = TLabel((15, 15, 15, 15), color=QColor(255, 255, 255, 155), parent=self.bglab)
-        self.lab.setGeometry(0.2*w, 0.275*h, 0.6*w, 0.45*h)
+        self.lab = TLabel((15, 15, 15, 15), color=QColor(255, 255, 255, 125), parent=self.bglab)
+        self.lab.setGeometry(0.2*w, 0.35*h, 0.6*w, 0.45*h)
         # 新建账号文本框并设置大小位置
         self.account = TLineEdit(5, 0.025*h, 0.6*w-10, 0.118*h, TLineEdit.ACCOUNT, self.lab)
         self.account.Edit.setPlaceholderText('账号/用户名/邮箱')  # 默认文字

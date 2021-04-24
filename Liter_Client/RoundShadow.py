@@ -90,7 +90,6 @@ class RoundShadow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         # 设置最小化按钮位置和大小 绑定事件
-        # self.minButton = TPushButton(img=['img/min1.png', 'img/min2.png', 'img/min2.png'], parent=self)
         self.minButton = MyButton(MyButton.MINI, self)
         self.minButton.setGeometry(self.width()-2*self.s-70, self.s+5, 30, 30)
         self.minButton.clicked.connect(self.showMinimized)

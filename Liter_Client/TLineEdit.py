@@ -41,6 +41,7 @@ class TLineEdit(QWidget):
         self.setGeometry(left, top, width, height)
         self.patten = patten
         self.Edit = EXEdit(self)  # 编辑框
+        self.Edit.setContextMenuPolicy(Qt.NoContextMenu)  # 禁用右键菜单 https://bbs.csdn.net/topics/391545518
         # 利用css代码取消边框和背景
         self.Edit.setStyleSheet(("border:0px;background:rgba(0,0,0,0);"))
         # 设置位置

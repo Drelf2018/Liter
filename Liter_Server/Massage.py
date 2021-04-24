@@ -1,9 +1,39 @@
+from PIL import Image
+from io import BytesIO
+import threading
+import requests
 import sqlite3
 import time
 import os
+import re
+
+
+new_url = {}
+
+
+def download(url: str, pos: int):
+    response = requests.get(url)  # 请求图片
+    image = Image.open(BytesIO(response.content))  # 读取网络图片
+    new_url[pos] = url+'@{}x{}'.format(image.width, image.height)
+
+
+def getPic(msg: str):
+    patten = re.compile(r'<img<sp/>src="[a-zA-z]+://[^\s]*"/>')  # 正则提取图片
+    imgs = re.findall(patten, msg)
+    thread = []
+    for img in imgs:
+        t = threading.Thread(target=download, args=(img[14:-3], imgs.index(img)))
+        t.start()
+        thread.append(t)
+    for t in thread:
+        t.join()
+    for img in imgs:
+        msg = msg.replace(img[14:-3], new_url[imgs.index(img)])
+    return msg
 
 
 def new(tid: int, uid: int, ip: str, msg: str):
+    msg = getPic(msg)
     c.execute("INSERT INTO MASSAGE VALUES (NULL,?,?,?,?,?);", (tid, uid, time.strftime(r'%Y/%m/%d %H:%M', time.localtime()), ip, msg))
     conn.commit()
     return c.execute('SELECT MID from MASSAGE order by MID desc limit 0,1;').fetchone()[0]

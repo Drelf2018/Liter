@@ -46,7 +46,7 @@ class TLabel(QLabel):
         pat.setRenderHint(pat.Antialiasing)  # 抗锯齿
         # 画刷为图片 若不存在为纯色
         if self.img:
-            self.img = self.img.scaled(self.width(), self.height())
+            self.img = self.img.scaled(self.width(), self.height(), -1, Qt.SmoothTransformation)
             brush.setTextureImage(self.img)
         else:
             brush = QBrush(self.color)

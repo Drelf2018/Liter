@@ -45,23 +45,18 @@ class TMessageLabel(QLabel):
             img = re.search(patten, t)
             if img:
                 try:
-                    td = False
                     url = t[10:-3]
-                    at = url.split('@')
-                    if len(at) > 1:
-                        dot = at[-1].split('.')
-                        if len(dot) == 2:
-                            x = dot[0].split('x')
-                            if len(x) == 2:
-                                w, h = int(x[0]), int(x[1])
-                                new_height = int(h/w*self.maxWidth*2/3)  # 图片宽度为限宽 2/3
-                                self.rwidth = max(self.rwidth, self.maxWidth*2/3)
-                                self.rheight += new_height + 3
-                                self.finish += 1
-                                self.td.append(url.replace('@{}x{}'.format(w, h), ''), len(temp))
-                                temp.append(len(temp))
-                                td = True
-                    if not td:
+                    size = re.search(r'@\d+x\d+', t)
+                    if size:
+                        size = size.group()[1:]
+                        w, h = size.split('x')
+                        new_height = int(int(h)/int(w)*self.maxWidth*2/3)  # 图片宽度为限宽 2/3
+                        self.rwidth = max(self.rwidth, self.maxWidth*2/3)
+                        self.rheight += new_height + 3
+                        self.finish += 1
+                        self.td.append(url.replace('@{}x{}'.format(w, h), ''), len(temp))
+                        temp.append(len(temp))
+                    else:
                         response = requests.get(url)  # 请求图片
                         image = Image.open(BytesIO(response.content))  # 读取网络图片
                         new_height = int(image.height/image.width*self.maxWidth*2/3)  # 图片宽度为限宽一半
@@ -203,7 +198,7 @@ class TDownload(QThread):
                     new_image = image.resize((int(self.tml.maxWidth*2/3), new_height), Image.ANTIALIAS)  # 缩放 https://blog.csdn.net/u010417185/article/details/74357382
                     self.pic[pos] = (new_image, image)
                     self.count += 1
-                    self.tml.update()
+                    self.tml.u()
                 except Exception:
                     pass
             time.sleep(0.5)
